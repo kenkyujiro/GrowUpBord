@@ -18,4 +18,14 @@ public class PlayerContoller : MonoBehaviour
         //現在位置の変更
         transform.position += movement * speed * Time.deltaTime;
     }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        Debug.Log("ぶつかったよ");
+       //ぶつかった相手が特定のタグを持っている場合、GameOver関数を呼び出す
+       if(collision.gameObject.CompareTag("Obstacle"))
+        {
+            FindObjectOfType<GameOverManager>().GameOver();
+        }
+    }
 }

@@ -27,6 +27,7 @@ public class ObstacleController : MonoBehaviour
         }
         else
         {
+            //普通のログと違い、黄色三角表示してくれる
             Debug.LogWarning("GMが見つかりませんでした。");
         }
         

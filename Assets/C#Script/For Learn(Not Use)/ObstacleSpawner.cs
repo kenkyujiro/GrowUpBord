@@ -11,7 +11,8 @@ public class ObstacleSpawner : MonoBehaviour
     void Start()
     {
         //spawnInterval‚Ì•b”‚²‚Æ‚É¶¬ˆ—(SpawnObstacle)‚ğs‚¤
-        InvokeRepeating("SpawnObstacle", 0f, spawnInterval);
+        //InvokeRepeating(ŠÖ”–¼, n•bŒã, n•bŠÔŠu)
+        InvokeRepeating("SpawnObstacle", 1f, spawnInterval);
     }
 
     void SpawnObstacle()
