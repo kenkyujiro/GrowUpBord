@@ -9,7 +9,9 @@ public class UIManager : MonoBehaviour
     public GameObject DiceTextObj;  //出目の表示パネル
     public GameObject DiceButtonObj;//ダイスボタン
 
-    public TextMeshProUGUI ClickText;
+    public TextMeshProUGUI ClickText;//Click!!テキスト
+
+    public GameObject BranchArrow;//分岐の矢印
 
     void Start()
     {
@@ -17,6 +19,7 @@ public class UIManager : MonoBehaviour
         DiceTextObj.gameObject.SetActive(false);
         DiceButtonObj.gameObject.SetActive(true);
         ClickText.gameObject.SetActive(false);
+        BranchArrow.gameObject.SetActive(false);
     }
 
     public void ManageDiceUI(bool DicePanel, bool DiceButton)
@@ -28,5 +31,10 @@ public class UIManager : MonoBehaviour
     public void ManageClickText(bool How_first)
     {
         ClickText.gameObject.SetActive(How_first);
+    }
+
+    public void ManageBrunchArrow(bool BrunchArrow)
+    {
+        BranchArrow.gameObject.SetActive(BrunchArrow);
     }
 }
