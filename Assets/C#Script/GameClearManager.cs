@@ -16,9 +16,12 @@ public class GameClearManager : MonoBehaviour
     {
         gameClearText.gameObject.SetActive(true);
         Debug.Log("Game Over");
-        //シーンをリロードしてリスタート
+
+        //シーンをリロードしてリスタートする関数
         //※これでスコアが0に戻る
         //SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+
+        //ゲームを止めている
         Time.timeScale = 0;
     }
 }

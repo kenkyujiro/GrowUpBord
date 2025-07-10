@@ -18,7 +18,10 @@ public class MovePiece : MonoBehaviour
     public GameObject uiManager;       //UI表示管理用
     private UIManager uiManage;
 
-    private int GoPiece;               //進める出目の数
+    public GameObject EventManager;    //イベント管理用
+    private EventManager eventManager;
+
+    public int GoPiece;                //進める出目の数
     private bool How_First;            //始めてのダイスロールかどうか
     public bool How_Branch;            //分岐に進んだかどうか
     public bool canClick;              //クリックできるかどうか
@@ -28,6 +31,7 @@ public class MovePiece : MonoBehaviour
         clear = GameManager.GetComponent<GameClearManager>();
         rollSystem = DiceSystem.GetComponent<DiceRollSystem>();
         uiManage = uiManager.GetComponent<UIManager>();
+        eventManager = EventManager.GetComponent<EventManager>();
 
         How_First = true;
         canClick = true;
@@ -72,7 +76,7 @@ public class MovePiece : MonoBehaviour
             GoPiece -= 1;
             rollSystem.UpdateText(GoPiece);
             //もしライン以上であればクリア
-            if(transform.position.x <= -6) 
+            if(transform.position.x == -6) 
             {
                 Debug.Log("ゲームクリア!!");
                 clear.GameClear();
@@ -81,6 +85,8 @@ public class MovePiece : MonoBehaviour
             {
                 //ManageDiceUI(bool DicePanel, bool DiceButton)
                 uiManage.ManageDiceUI(false, true);
+                //マスが0の時にイベントを発火する
+                eventManager.IgnitionEvent();
             }
 
             uiManage.ManageClickText(How_First);
@@ -94,6 +100,7 @@ public class MovePiece : MonoBehaviour
     //プレイヤーのコマを進める関数
     private void changePos() 
     {
+
         //分岐に進むと決めたとき
         if (How_Branch == true)
         {
@@ -139,7 +146,7 @@ public class MovePiece : MonoBehaviour
     //分岐の選択処理関数
     private void howGO_Branch()
     {
-        //分岐の矢印の表示※矢印はOnMouseDownがある
+        //分岐の矢印の表示※矢印はOnMouseDownが付いている
         uiManage.ManageBrunchArrow(true);
     }
 
