@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+//矢印決定システム
 public class ToggleBranch : MonoBehaviour
 {
     public GameObject Player;     //ゲームクリアscriptへ参照用
