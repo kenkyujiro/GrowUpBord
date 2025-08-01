@@ -2,12 +2,18 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+
+//やらなければいけないこと
+//コルーチンがほしい
+//てきの行動を記述する
+//行動テキストを表示(ログも確認できると良し)
+//コマの進捗状況をセーブできるようにする
+
 
 public class ButtleSystem : MonoBehaviour
 {
     public static ButtleSystem Instance { get; private set; }
-
-    public TextMeshProUGUI GoalText;
 
     public GameObject Monster_Bison;        //バイソン
     public GameObject Monster_Zako1;        //モンスターズインク
@@ -19,50 +25,50 @@ public class ButtleSystem : MonoBehaviour
     private GameObject Monster;
     private string save_monster;            //対戦しているモンスターの名前
 
-    public GameObject uiManager;            //UI表示管理用
-    private UIManager uiManage;
-
     public GameObject playerStatus;         //プレイヤーステータスの参照
     private PlayerStatus playerST;
+    private PlayerStatusManager playerST_TX;//表記上のプレイヤーステータス
 
-    public GameObject monsterStatus;         //モンスターステータスの参照
+    public GameObject monsterStatus;        //モンスターステータスの参照
     private MonsterStatus monsterST;
 
-    public GameObject AttackButton;          //各コマンドボタン
+    public GameObject AttackButton;         //各コマンドボタン
     public GameObject SPAttackButton;
     public GameObject GurdButton;
     public GameObject RunButton;
 
     public Vector2 spawnPosition;
 
-    int Player_EXP;
-
-    private void Awake()
+    private void OnEnable()
     {
-        // シングルトン初期化処理
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
+        // シーンがロードされるたびに呼ばれる
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
 
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
+    private void OnDisable()
+    {
+        // イベントハンドラの解除
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
 
-        // UIManager の取得
-        uiManage = uiManager.GetComponent<UIManager>();
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        //オブジェクトの取得
+        playerStatus = GameObject.Find("PlayerStatus");
+
         //プレイヤーステータス(hp,powerなど)の取得
         playerST = playerStatus.GetComponent<PlayerStatus>();
+        playerST_TX = playerStatus.GetComponent<PlayerStatusManager>();
         monsterST = monsterStatus.GetComponent<MonsterStatus>();
 
-        //表示を隠す
-        gameObject.SetActive(false);
-        AttackButton.gameObject.SetActive(false);
-        SPAttackButton.gameObject.SetActive(false);
-        GurdButton.gameObject.SetActive(false);
-        RunButton.gameObject.SetActive(false);
+        //ステータスの反映
+        playerST_TX.changeHP(playerST.hp);
+        playerST_TX.changeLevel(playerST.Level);
+        playerST_TX.changeEXP(playerST.exp);
 
-        Player_EXP = 0;
+        //別シーンで保存したモンスター名の取得(保存した変数名, 何も保存されていない場合)
+        string monsterName = PlayerPrefs.GetString("monsterName", "Zako1");
+        ButtleStart(monsterName);
     }
 
     //イベントマネージャーから起動する
@@ -76,9 +82,7 @@ public class ButtleSystem : MonoBehaviour
         RunButton.gameObject.SetActive(true);
 
         //背景の表示やいらないテキストの非表示
-        GoalText.gameObject.SetActive(false);
         gameObject.SetActive(true);
-        uiManage.ManageDiceUI(false, false);
 
         save_monster = monster;
 
@@ -159,26 +163,31 @@ public class ButtleSystem : MonoBehaviour
         //相手の体力がなくなったら
         if (monsterST.monster_hp <= 0)
         {
-            Player_EXP += monsterST.monster_EXP;
+            playerST.exp += monsterST.monster_EXP;
 
             //経験値が一定以上になったら
-            if (Player_EXP >= 40)
+            if (playerST.exp >= 40)
             {
-                Player_EXP -= 40;
+                playerST.exp -= 40;
                 playerST.Levelup();
 
                 //一度に40以上の経験値を貰った場合の対処
                 while (true)
                 {
-                    if (Player_EXP < 40)
+                    if (playerST.exp < 40)
                     {
+                        //表記上にもレベルを反映
+                        playerST_TX.changeLevel(playerST.Level);
                         break;
                     }
-                    Player_EXP -= 40;
+                    playerST.exp -= 40;
                     playerST.Levelup();
                 }
             }
 
+            //ステータスを表記上にも反映
+            playerST_TX.changeEXP(playerST.exp);
+            playerST_TX.changeHP(playerST.hp);
             ButtleEnd();
         }
         else
@@ -208,26 +217,31 @@ public class ButtleSystem : MonoBehaviour
         //相手の体力がなくなったら
         if(monsterST.monster_hp <= 0)
         {
-            Player_EXP += monsterST.monster_EXP;
+            playerST.exp += monsterST.monster_EXP;
 
             //経験値が一定以上になったら
-            if(Player_EXP >= 40)
+            if(playerST.exp >= 40)
             {
-                Player_EXP -= 40;
+                playerST.exp -= 40;
                 playerST.Levelup();
 
                 //一度に40以上の経験値を貰った場合の対処
                 while (true)
                 {
-                    if(Player_EXP < 40) 
+                    if(playerST.exp < 40) 
                     {
+                        //表記上にもレベルを反映
+                        playerST_TX.changeLevel(playerST.Level);
                         break;
                     }
-                    Player_EXP -= 40;
+                    playerST.exp -= 40;
                     playerST.Levelup();
                 }
             }
 
+            //表記上にも経験値/HPを反映
+            playerST_TX.changeEXP(playerST.exp);
+            playerST_TX.changeHP(playerST.hp);
             ButtleEnd();
         }
         else 
@@ -281,9 +295,9 @@ public class ButtleSystem : MonoBehaviour
     private void ButtleEnd()
     {
         Destroy(Monster);
-        GoalText.gameObject.SetActive(true);
         gameObject.SetActive(false);
-        uiManage.ManageDiceUI(false, true);
+        //シーンチェンジを行う
+        SceneManager.LoadScene("SugorokuScene");
     }
 
     //モンスターによって行動を変化させる

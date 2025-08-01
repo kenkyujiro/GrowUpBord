@@ -5,13 +5,13 @@ using UnityEngine;
 
 public class UIManager : MonoBehaviour
 {
-    public TextMeshProUGUI DiceText;//出目の表示テキスト
-    public GameObject DiceTextObj;  //出目の表示パネル
-    public GameObject DiceButtonObj;//ダイスボタン
+    public TextMeshProUGUI DiceText;    //出目の表示テキスト
+    public GameObject DiceTextObj;      //出目の表示パネル
+    public GameObject DiceButtonObj;    //ダイスボタン
 
-    public TextMeshProUGUI ClickText;//Click!!テキスト
+    public TextMeshProUGUI ClickText;   //Click!!テキスト
 
-    public GameObject BranchArrow;//分岐の矢印
+    public GameObject BranchArrow;      //分岐の矢印
 
     void Start()
     {

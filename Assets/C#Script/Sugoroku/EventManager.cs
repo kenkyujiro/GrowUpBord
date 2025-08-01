@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class EventManager : MonoBehaviour
 {
@@ -12,6 +13,7 @@ public class EventManager : MonoBehaviour
         movePiece = Player.GetComponent<MovePiece>();
     }
 
+    //発火したイベントの処理
     public void IgnitionEvent()
     {
         //x (-5～7)(y：-1のみ)、 y (-1～3)(x：-2～3のみ)
@@ -23,6 +25,10 @@ public class EventManager : MonoBehaviour
                 if (Player.transform.position.y == 0)//(-2 0)
                 {
                     Debug.Log("強化！");
+                    //値を保存する
+                    PlayerPrefs.SetString("monsterName", "Bison");
+                    //RPGシーンに遷移する
+                    SceneManager.LoadScene("RPGScene");
                 }
                 else if(Player.transform.position.y == 3)
                 {
@@ -35,5 +41,13 @@ public class EventManager : MonoBehaviour
                 Player.transform.position += new Vector3(13, 0, 0);
             }
         }
+    }
+
+    public void testChange()
+    {
+        //値を保存する
+        PlayerPrefs.SetString("monsterName", "Zako1");
+        //RPGシーンに遷移する
+        SceneManager.LoadScene("RPGScene");
     }
 }

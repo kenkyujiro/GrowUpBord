@@ -44,6 +44,7 @@ public class MovePiece : MonoBehaviour
         if (GoPiece == 0)
         {
             //サイコロを振る(ボタンにアタッチ)
+            //ダイスロールscript内の関数を実行する
             GoPiece = FindObjectOfType<DiceRollSystem>().GetDice();
         }
         else 

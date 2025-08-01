@@ -5,20 +5,28 @@ using UnityEngine;
 
 public class PlayerStatus : MonoBehaviour
 {
+    public static PlayerStatus Instance { get; private set; }
+
     //defenceはluckで貫通できるもの
-    public int power, hp, defence, luck;
-    public int Max_hp;
-    public int Level;
+    public int power = 1,
+               hp = 20, 
+               defence = 1, 
+               luck = 1;
+    public int Max_hp = 20;
+    public int Level = 1;//疑似乱数で作る
+    public int exp = 0;
 
     public void Awake()
     {
-        Level = 1;
-        power = 1;
-        hp = 20;
-        Max_hp = 20;
-        defence = 0;
-        //疑似乱数で作る
-        luck = 1;
+        // シングルトン初期化処理
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
     }
 
     public void Levelup()
@@ -41,6 +49,8 @@ public class PlayerStatus : MonoBehaviour
 
         //必ず最大HPが増えるようにする
         powerUp("hp", 3, "0", 0);
+        //レベルアップ時は完全回復
+        hp = Max_hp;
     }
 
     //二つ要素があるのは装備用
