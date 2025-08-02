@@ -6,6 +6,9 @@ TagManager:
   tags:
   - Obstacle
   - Branch
+  - LevelText
+  - HPText
+  - EXPText
   layers:
   - Default
   - TransparentFX

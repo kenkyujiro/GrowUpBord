@@ -25,6 +25,7 @@ public class MovePiece : MonoBehaviour
     private bool How_First;            //始めてのダイスロールかどうか
     public bool How_Branch;            //分岐に進んだかどうか
     public bool canClick;              //クリックできるかどうか
+    private bool howClear;             //ゴールに付いたかどうか
 
     private void Start()
     {
@@ -36,6 +37,18 @@ public class MovePiece : MonoBehaviour
         How_First = true;
         canClick = true;
         How_Branch = false;
+        howClear = false;
+
+
+        //もしマスを進んでいた場合、座標を再ロードする
+        if (PlayerPrefs.HasKey("x"))
+        {
+            float x = PlayerPrefs.GetFloat("x");
+            float y = PlayerPrefs.GetFloat("y");
+            float z = PlayerPrefs.GetFloat("z");
+            transform.position = new Vector3(x, y, z);
+        }
+
     }
 
     public void GetValue() 
@@ -79,10 +92,11 @@ public class MovePiece : MonoBehaviour
             //もしライン以上であればクリア
             if(transform.position.x == -6) 
             {
+                GoPiece = 0;
                 Debug.Log("ゲームクリア!!");
                 clear.GameClear();
             }
-            if(GoPiece == 0)//出目分すすみおわったら表示する
+            if(GoPiece == 0 && howClear != true)//出目分すすみおわったら表示する
             {
                 //ManageDiceUI(bool DicePanel, bool DiceButton)
                 uiManage.ManageDiceUI(false, true);

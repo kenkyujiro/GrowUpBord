@@ -26,6 +26,7 @@ public class EventManager : MonoBehaviour
                 {
                     Debug.Log("強化！");
                     //値を保存する
+                    savePos();
                     PlayerPrefs.SetString("monsterName", "Bison");
                     //RPGシーンに遷移する
                     SceneManager.LoadScene("RPGScene");
@@ -46,8 +47,17 @@ public class EventManager : MonoBehaviour
     public void testChange()
     {
         //値を保存する
+        savePos();
         PlayerPrefs.SetString("monsterName", "Zako1");
         //RPGシーンに遷移する
         SceneManager.LoadScene("RPGScene");
+    }
+
+    public void savePos()
+    {
+        PlayerPrefs.SetFloat("x", Player.transform.position.x);
+        PlayerPrefs.SetFloat("y", Player.transform.position.y);
+        PlayerPrefs.SetFloat("z", Player.transform.position.z);
+        PlayerPrefs.Save();
     }
 }
