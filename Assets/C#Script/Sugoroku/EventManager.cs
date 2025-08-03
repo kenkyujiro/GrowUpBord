@@ -6,41 +6,37 @@ using UnityEngine.SceneManagement;
 public class EventManager : MonoBehaviour
 {
     public GameObject Player;     //現在止まっているマス参照用
-    private MovePiece movePiece;
 
-    void Awake()
+    private void Start()
     {
-        movePiece = Player.GetComponent<MovePiece>();
+        Player = GameObject.FindGameObjectWithTag("Player");
     }
 
     //発火したイベントの処理
-    public void IgnitionEvent()
+    public void IgnitionEvent(float x_pos, float y_pos)
     {
         //x (-5～7)(y：-1のみ)、 y (-1～3)(x：-2～3のみ)
         //分岐最初(-2 -1) 分岐最後(3 -1)
-        if(movePiece.GoPiece == 0) 
+        if (x_pos == -2)
         {
-            if (Player.transform.position.x == -2)
+            if (y_pos == 0)//(-2 0)
             {
-                if (Player.transform.position.y == 0)//(-2 0)
-                {
-                    Debug.Log("強化！");
-                    //値を保存する
-                    savePos();
-                    PlayerPrefs.SetString("monsterName", "Bison");
-                    //RPGシーンに遷移する
-                    SceneManager.LoadScene("RPGScene");
-                }
-                else if(Player.transform.position.y == 3)
-                {
-                    Debug.Log("凶化だ！");
-                }
+                Debug.Log("強化！");
+                //値を保存する
+                savePos();
+                PlayerPrefs.SetString("monsterName", "Bison");
+                //RPGシーンに遷移する
+                SceneManager.LoadScene("RPGScene");
             }
-            else if (Player.transform.position.x == -5)//(-5 -1) 
+            else if(y_pos == 3)
             {
-                Debug.Log("最初からだ！");
-                Player.transform.position += new Vector3(13, 0, 0);
+                Debug.Log("凶化だ！");
             }
+        }
+        else if (x_pos == -5)//(-5 -1) 
+        {
+            Debug.Log("最初からだ！");
+            Player.transform.position += new Vector3(13, 0, 0);
         }
     }
 

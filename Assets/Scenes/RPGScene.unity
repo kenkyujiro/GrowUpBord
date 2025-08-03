@@ -694,7 +694,7 @@ MonoBehaviour:
   Monster_Boss: {fileID: 8117842810303905007, guid: c6e4ffd9ac0382247824dc863bbf89df, type: 3}
   Monster_Rare: {fileID: 4930865091568191939, guid: 0c25b535532ec644f938dc23a8a83f2a, type: 3}
   Monster_Run: {fileID: 4279388059102422649, guid: 15ee4ab1f191f7a408a40713672a16f9, type: 3}
-  playerStatus: {fileID: 1840773709}
+  playerStatus: {fileID: 0}
   monsterStatus: {fileID: 2065740878}
   AttackButton: {fileID: 987291227}
   SPAttackButton: {fileID: 537664828}
@@ -2410,73 +2410,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1840773709
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1840773712}
-  - component: {fileID: 1840773711}
-  - component: {fileID: 1840773710}
-  m_Layer: 0
-  m_Name: PlayerStatus
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1840773710
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1840773709}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7bf886143e7eaab4dad230612c4ece10, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Player_Level: {fileID: 1551179750}
-  Player_HP: {fileID: 1901576102}
-  Player_EXP: {fileID: 290200854}
---- !u!114 &1840773711
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1840773709}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3ecf26be645142349a600820844f6de2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  power: 1
-  hp: 20
-  defence: 0
-  luck: 1
-  Max_hp: 20
-  Level: 1
-  exp: 0
---- !u!4 &1840773712
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1840773709}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1901576100
 GameObject:
   m_ObjectHideFlags: 0
@@ -3045,7 +2978,6 @@ SceneRoots:
   - {fileID: 1837501023}
   - {fileID: 1218073972}
   - {fileID: 2139090952}
-  - {fileID: 1840773712}
   - {fileID: 707360513}
   - {fileID: 2065740880}
   - {fileID: 2099790177}

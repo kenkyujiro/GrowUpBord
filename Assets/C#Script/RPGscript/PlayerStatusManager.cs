@@ -10,17 +10,19 @@ public class PlayerStatusManager : MonoBehaviour
     public TextMeshProUGUI Player_HP;
     public TextMeshProUGUI Player_EXP;
 
+    //本scriptが有効化されたとき
     private void OnEnable()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
+    //本scriptが無効化されたとき
     private void OnDisable()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
-    //シーンに遷移するたびに実行
+    //シーンに遷移するたびに実行 OnSceneLoaded(読み込まれたシーン情報, シーンの読み込み方法)
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         // 新しいシーン内の Text を再検索

@@ -5,10 +5,13 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public class MovePiece : MonoBehaviour
 {
+    public static MovePiece Instance { get; private set; }
+
     public GameObject GameManager;     //ゲームクリアscriptへ参照用
     private GameClearManager clear;
 
@@ -27,28 +30,45 @@ public class MovePiece : MonoBehaviour
     public bool canClick;              //クリックできるかどうか
     private bool howClear;             //ゴールに付いたかどうか
 
-    private void Start()
+    private void Awake()
     {
-        clear = GameManager.GetComponent<GameClearManager>();
-        rollSystem = DiceSystem.GetComponent<DiceRollSystem>();
-        uiManage = uiManager.GetComponent<UIManager>();
-        eventManager = EventManager.GetComponent<EventManager>();
+        // Singletonパターン: すでにGameManagerが存在する場合は新しいインスタンスを作らない
+        if (Instance != null)
+        {
+            Destroy(gameObject); // 既存のインスタンスがあれば、このオブジェクトを削除
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject); // シーン遷移後もこのオブジェクトを破棄しない
 
         How_First = true;
         canClick = true;
         How_Branch = false;
         howClear = false;
+    }
 
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
 
-        //もしマスを進んでいた場合、座標を再ロードする
-        if (PlayerPrefs.HasKey("x"))
-        {
-            float x = PlayerPrefs.GetFloat("x");
-            float y = PlayerPrefs.GetFloat("y");
-            float z = PlayerPrefs.GetFloat("z");
-            transform.position = new Vector3(x, y, z);
-        }
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
 
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        GameManager = GameObject.Find("GameClearManager");
+        DiceSystem = GameObject.Find("DiceSystem");
+        uiManager = GameObject.Find("UIManager");
+        EventManager = GameObject.Find("EventManager");
+
+        clear = GameManager?.GetComponent<GameClearManager>();
+        rollSystem = DiceSystem?.GetComponent<DiceRollSystem>();
+        uiManage = uiManager?.GetComponent<UIManager>();
+        eventManager = EventManager?.GetComponent<EventManager>();
     }
 
     public void GetValue() 
@@ -101,7 +121,7 @@ public class MovePiece : MonoBehaviour
                 //ManageDiceUI(bool DicePanel, bool DiceButton)
                 uiManage.ManageDiceUI(false, true);
                 //マスが0の時にイベントを発火する
-                eventManager.IgnitionEvent();
+                eventManager.IgnitionEvent(transform.position.x, transform.position.y);
             }
 
             uiManage.ManageClickText(How_First);
