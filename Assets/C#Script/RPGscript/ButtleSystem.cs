@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -38,6 +39,9 @@ public class ButtleSystem : MonoBehaviour
     public GameObject RunButton;
 
     public Vector2 spawnPosition;
+
+    //コマンドのディレイ
+    public float commandDelay = 10000.0f;
 
     private void OnEnable()
     {
@@ -149,6 +153,18 @@ public class ButtleSystem : MonoBehaviour
         GurdButton.gameObject.SetActive(false);
         RunButton.gameObject.SetActive(false);
 
+        //遅延
+        StartCoroutine(AttackCoroutine());
+
+        //確認用
+        Debug.Log("行動開始！");
+    }
+
+    private IEnumerator AttackCoroutine()
+    {
+        //少し待つ
+        yield return new WaitForSeconds(commandDelay);
+
         int Attackpower = playerST.power - monsterST.monster_defence;
 
         //もし0以下になった場合は1だけ減らすようにする
@@ -158,7 +174,6 @@ public class ButtleSystem : MonoBehaviour
         }
         //パワーの分だけ減らす
         monsterST.monster_hp -= Attackpower;
-
 
         //相手の体力がなくなったら
         if (monsterST.monster_hp <= 0)
@@ -211,16 +226,23 @@ public class ButtleSystem : MonoBehaviour
         GurdButton.gameObject.SetActive(false);
         RunButton.gameObject.SetActive(false);
 
+        StartCoroutine(SpecialAttackCoroutine());
+    }
+
+    private IEnumerator SpecialAttackCoroutine()
+    {
+        yield return new WaitForSeconds(commandDelay);
+
         //パワーの分だけ減らす
         monsterST.monster_hp -= playerST.power;
 
         //相手の体力がなくなったら
-        if(monsterST.monster_hp <= 0)
+        if (monsterST.monster_hp <= 0)
         {
             playerST.exp += monsterST.monster_EXP;
 
             //経験値が一定以上になったら
-            if(playerST.exp >= 40)
+            if (playerST.exp >= 40)
             {
                 playerST.exp -= 40;
                 playerST.Levelup();
@@ -228,7 +250,7 @@ public class ButtleSystem : MonoBehaviour
                 //一度に40以上の経験値を貰った場合の対処
                 while (true)
                 {
-                    if(playerST.exp < 40) 
+                    if (playerST.exp < 40)
                     {
                         //表記上にもレベルを反映
                         playerST_TX.changeLevel(playerST.Level);
@@ -244,7 +266,7 @@ public class ButtleSystem : MonoBehaviour
             playerST_TX.changeHP(playerST.hp);
             ButtleEnd();
         }
-        else 
+        else
         {
             //モンスターのターン
             monsterTurn(save_monster);
@@ -264,6 +286,13 @@ public class ButtleSystem : MonoBehaviour
         SPAttackButton.gameObject.SetActive(false);
         GurdButton.gameObject.SetActive(false);
         RunButton.gameObject.SetActive(false);
+
+        StartCoroutine(GurdCoroutine());
+    }
+
+    private IEnumerator GurdCoroutine()
+    {
+        yield return new WaitForSeconds(commandDelay);
 
         //一時的にディフェンスを上げる
         playerST.defence += 10;
@@ -287,6 +316,13 @@ public class ButtleSystem : MonoBehaviour
         SPAttackButton.gameObject.SetActive(false);
         GurdButton.gameObject.SetActive(false);
         RunButton.gameObject.SetActive(false);
+
+        StartCoroutine(RunCoroutine());
+    }
+
+    private IEnumerator RunCoroutine()
+    {
+        yield return new WaitForSeconds(commandDelay);
 
         //if (monster = "Boss") { }
         ButtleEnd();
