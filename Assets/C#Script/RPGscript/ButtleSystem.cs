@@ -38,10 +38,15 @@ public class ButtleSystem : MonoBehaviour
     public GameObject GurdButton;
     public GameObject RunButton;
 
+    public GameObject battleLogTextPrefab;  // 行動表示テキストのプレハブ
+    public Transform battleLogContainer;    // テキスト表示先の親
+
+    private int maxLogCount = 30;
+
     public Vector2 spawnPosition;
 
     //コマンドのディレイ
-    public float commandDelay = 10000.0f;
+    private float commandDelay = 0.5f;
 
     private void OnEnable()
     {
@@ -162,59 +167,79 @@ public class ButtleSystem : MonoBehaviour
 
     private IEnumerator AttackCoroutine()
     {
-        //少し待つ
+
         yield return new WaitForSeconds(commandDelay);
 
-        int Attackpower = playerST.power - monsterST.monster_defence;
-
-        //もし0以下になった場合は1だけ減らすようにする
-        if (Attackpower <= 0)
+        try
         {
-            Attackpower = 1;
-        }
-        //パワーの分だけ減らす
-        monsterST.monster_hp -= Attackpower;
-
-        //相手の体力がなくなったら
-        if (monsterST.monster_hp <= 0)
-        {
-            playerST.exp += monsterST.monster_EXP;
-
-            //経験値が一定以上になったら
-            if (playerST.exp >= 40)
+            if (playerST == null)
             {
-                playerST.exp -= 40;
-                playerST.Levelup();
-
-                //一度に40以上の経験値を貰った場合の対処
-                while (true)
-                {
-                    if (playerST.exp < 40)
-                    {
-                        //表記上にもレベルを反映
-                        playerST_TX.changeLevel(playerST.Level);
-                        break;
-                    }
-                    playerST.exp -= 40;
-                    playerST.Levelup();
-                }
+                Debug.LogError("playerST is null");
+            }
+            if (monsterST == null)
+            {
+                Debug.LogError("monsterST is null");
             }
 
-            //ステータスを表記上にも反映
-            playerST_TX.changeEXP(playerST.exp);
-            playerST_TX.changeHP(playerST.hp);
-            ButtleEnd();
-        }
-        else
-        {
-            //モンスターのターン
-            monsterTurn(save_monster);
+            Debug.Log("行動完了！");
 
-            //コマンドボタンの表示
-            AttackButton.gameObject.SetActive(true);
-            SPAttackButton.gameObject.SetActive(true);
-            GurdButton.gameObject.SetActive(true);
-            RunButton.gameObject.SetActive(true);
+            int Attackpower = playerST.power - monsterST.monster_defence;
+
+            AddBattleLog("Player Give" + Attackpower + "Point!");
+
+            //もし0以下になった場合は1だけ減らすようにする
+            if (Attackpower <= 0)
+            {
+                Attackpower = 1;
+            }
+            //パワーの分だけ減らす
+            monsterST.monster_hp -= Attackpower;
+
+            //相手の体力がなくなったら
+            if (monsterST.monster_hp <= 0)
+            {
+                playerST.exp += monsterST.monster_EXP;
+
+                //経験値が一定以上になったら
+                if (playerST.exp >= 40)
+                {
+                    playerST.exp -= 40;
+                    playerST.Levelup();
+
+                    //一度に40以上の経験値を貰った場合の対処
+                    while (true)
+                    {
+                        if (playerST.exp < 40)
+                        {
+                            //表記上にもレベルを反映
+                            playerST_TX.changeLevel(playerST.Level);
+                            break;
+                        }
+                        playerST.exp -= 40;
+                        playerST.Levelup();
+                    }
+                }
+
+                //ステータスを表記上にも反映
+                playerST_TX.changeEXP(playerST.exp);
+                playerST_TX.changeHP(playerST.hp);
+                ButtleEnd();
+            }
+            else
+            {
+                //モンスターのターン
+                monsterTurn(save_monster);
+
+                //コマンドボタンの表示
+                AttackButton.gameObject.SetActive(true);
+                SPAttackButton.gameObject.SetActive(true);
+                GurdButton.gameObject.SetActive(true);
+                RunButton.gameObject.SetActive(true);
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError("AttackCoroutine Exception: " + e.Message + "\n" + e.StackTrace);
         }
     }
 
@@ -331,7 +356,6 @@ public class ButtleSystem : MonoBehaviour
     private void ButtleEnd()
     {
         Destroy(Monster);
-        gameObject.SetActive(false);
         //シーンチェンジを行う
         SceneManager.LoadScene("SugorokuScene");
     }
@@ -353,4 +377,19 @@ public class ButtleSystem : MonoBehaviour
         else//攻撃、ガード、特殊攻撃
         {}
     }
+
+    //バトルログテキストの追加
+    private void AddBattleLog(string message)
+    {
+        if (battleLogContainer.childCount >= maxLogCount)
+        {
+            // 最古のログを削除
+            Destroy(battleLogContainer.GetChild(0).gameObject);
+        }
+
+        GameObject logEntry = Instantiate(battleLogTextPrefab, battleLogContainer);
+        TextMeshProUGUI logText = logEntry.GetComponent<TextMeshProUGUI>();
+        logText.text = message;
+    }
+
 }
