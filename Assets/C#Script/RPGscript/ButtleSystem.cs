@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 //やらなければいけないこと
 //コルーチンがほしい
@@ -42,6 +43,7 @@ public class ButtleSystem : MonoBehaviour
     public Transform battleLogContainer;    // テキスト表示先の親
 
     private int maxLogCount = 30;
+    public ScrollRect scrollRect;           //ScrollViewのScrollRect
 
     public Vector2 spawnPosition;
 
@@ -148,6 +150,8 @@ public class ButtleSystem : MonoBehaviour
             Monster = Instantiate(Monster_Boss);
             Monster.transform.position = new Vector3(spawnPosition.x, spawnPosition.y, 0f);
         }
+
+        AddBattleLog(monster + " popped out!");
     }
 
     //通常攻撃
@@ -160,9 +164,6 @@ public class ButtleSystem : MonoBehaviour
 
         //遅延
         StartCoroutine(AttackCoroutine());
-
-        //確認用
-        Debug.Log("行動開始！");
     }
 
     private IEnumerator AttackCoroutine()
@@ -170,76 +171,77 @@ public class ButtleSystem : MonoBehaviour
 
         yield return new WaitForSeconds(commandDelay);
 
-        try
+        if (playerST == null)
         {
-            if (playerST == null)
+            Debug.LogError("playerST is null");
+        }
+        if (monsterST == null)
+        {
+            Debug.LogError("monsterST is null");
+        }
+
+        int Attackpower = playerST.power - monsterST.monster_defence;
+
+        //もし0以下になった場合は1だけ減らすようにする
+        if (Attackpower <= 0)
+        {
+            Attackpower = 1;
+        }
+
+        AddBattleLog("Player Give" + Attackpower + "Point!");
+
+        //パワーの分だけ減らす
+        monsterST.monster_hp -= Attackpower;
+
+        yield return new WaitForSeconds(commandDelay);
+
+        //相手の体力がなくなったら
+        if (monsterST.monster_hp <= 0)
+        {
+            playerST.exp += monsterST.monster_EXP;
+
+            AddBattleLog("You Get" + monsterST.monster_EXP + "EXP!");
+
+            //経験値が一定以上になったら
+            if (playerST.exp >= 40)
             {
-                Debug.LogError("playerST is null");
-            }
-            if (monsterST == null)
-            {
-                Debug.LogError("monsterST is null");
-            }
+                playerST.exp -= 40;
+                playerST.Levelup();
 
-            Debug.Log("行動完了！");
+                AddBattleLog("Level UP!");
+                yield return new WaitForSeconds(commandDelay);
 
-            int Attackpower = playerST.power - monsterST.monster_defence;
-
-            AddBattleLog("Player Give" + Attackpower + "Point!");
-
-            //もし0以下になった場合は1だけ減らすようにする
-            if (Attackpower <= 0)
-            {
-                Attackpower = 1;
-            }
-            //パワーの分だけ減らす
-            monsterST.monster_hp -= Attackpower;
-
-            //相手の体力がなくなったら
-            if (monsterST.monster_hp <= 0)
-            {
-                playerST.exp += monsterST.monster_EXP;
-
-                //経験値が一定以上になったら
-                if (playerST.exp >= 40)
-                {
+                //一度に40以上の経験値を貰った場合の対処
+                while (true)
+               {
+                    if (playerST.exp < 40)
+                    {
+                        //表記上にもレベルを反映
+                        playerST_TX.changeLevel(playerST.Level);
+                        break;
+                    }
+                    AddBattleLog("Level UP!");
                     playerST.exp -= 40;
                     playerST.Levelup();
-
-                    //一度に40以上の経験値を貰った場合の対処
-                    while (true)
-                    {
-                        if (playerST.exp < 40)
-                        {
-                            //表記上にもレベルを反映
-                            playerST_TX.changeLevel(playerST.Level);
-                            break;
-                        }
-                        playerST.exp -= 40;
-                        playerST.Levelup();
-                    }
+                    yield return new WaitForSeconds(commandDelay);
                 }
-
-                //ステータスを表記上にも反映
-                playerST_TX.changeEXP(playerST.exp);
-                playerST_TX.changeHP(playerST.hp);
-                ButtleEnd();
             }
-            else
-            {
-                //モンスターのターン
-                monsterTurn(save_monster);
 
-                //コマンドボタンの表示
-                AttackButton.gameObject.SetActive(true);
-                SPAttackButton.gameObject.SetActive(true);
-                GurdButton.gameObject.SetActive(true);
-                RunButton.gameObject.SetActive(true);
-            }
+            //ステータスを表記上にも反映
+            playerST_TX.changeEXP(playerST.exp);
+            playerST_TX.changeHP(playerST.hp);
+            ButtleEnd();
         }
-        catch (System.Exception e)
+        else
         {
-            Debug.LogError("AttackCoroutine Exception: " + e.Message + "\n" + e.StackTrace);
+            //モンスターのターン
+            monsterTurn(save_monster);
+
+            //コマンドボタンの表示
+            AttackButton.gameObject.SetActive(true);
+            SPAttackButton.gameObject.SetActive(true);
+            GurdButton.gameObject.SetActive(true);
+            RunButton.gameObject.SetActive(true);
         }
     }
 
@@ -258,19 +260,31 @@ public class ButtleSystem : MonoBehaviour
     {
         yield return new WaitForSeconds(commandDelay);
 
+        AddBattleLog("Player Give" + playerST.power + "Point!");
+
         //パワーの分だけ減らす
         monsterST.monster_hp -= playerST.power;
+
+        yield return new WaitForSeconds(commandDelay);
 
         //相手の体力がなくなったら
         if (monsterST.monster_hp <= 0)
         {
             playerST.exp += monsterST.monster_EXP;
 
+            AddBattleLog("You Get" + monsterST.monster_EXP + "EXP!");
+
+            yield return new WaitForSeconds(commandDelay);
+
             //経験値が一定以上になったら
             if (playerST.exp >= 40)
             {
                 playerST.exp -= 40;
                 playerST.Levelup();
+
+                AddBattleLog("Level UP!");
+
+                yield return new WaitForSeconds(commandDelay);
 
                 //一度に40以上の経験値を貰った場合の対処
                 while (true)
@@ -281,8 +295,10 @@ public class ButtleSystem : MonoBehaviour
                         playerST_TX.changeLevel(playerST.Level);
                         break;
                     }
+                    AddBattleLog("Level UP!");
                     playerST.exp -= 40;
                     playerST.Levelup();
+                    yield return new WaitForSeconds(commandDelay);
                 }
             }
 
@@ -319,6 +335,10 @@ public class ButtleSystem : MonoBehaviour
     {
         yield return new WaitForSeconds(commandDelay);
 
+        AddBattleLog("Player Gurd!");
+
+        yield return new WaitForSeconds(commandDelay);
+
         //一時的にディフェンスを上げる
         playerST.defence += 10;
 
@@ -349,6 +369,10 @@ public class ButtleSystem : MonoBehaviour
     {
         yield return new WaitForSeconds(commandDelay);
 
+        AddBattleLog("Player Escaped!");
+
+        yield return new WaitForSeconds(commandDelay);
+
         //if (monster = "Boss") { }
         ButtleEnd();
     }
@@ -364,18 +388,99 @@ public class ButtleSystem : MonoBehaviour
     //逃げたと判断できる時間がほしいため、time.stopみたいなものが欲しい
     private void monsterTurn(string monster)
     {
-        if (monster == "Bison")//攻撃、ガード、特殊攻撃
+        System.Random random = new System.Random();
+        int value = random.Next(0, 100);//0～99の乱数を生成
+
+        if (monster == "Bison")         //攻撃、ガード、特殊攻撃
+        {
+            if (value < 60)             //攻撃
+            {
+                MonsterAction("Attack");
+            }
+            else if (value < 90)        //特殊攻撃
+            {
+                MonsterAction("Special");
+            }
+            else                        //ガード
+            {
+                MonsterAction("Gurd");
+            }
+        }
+        else if (monster == "Zako1")    //攻撃、ガード
+        {
+            if (value < 70)             //攻撃
+            {
+                MonsterAction("Attack");
+            }
+            else                        //ガード 
+            {
+                MonsterAction("Gurd");
+            }
+        }
+        else if (monster == "Zako2")    //攻撃、ガード
+        {
+            if (value < 80)             //攻撃 
+            {
+                MonsterAction("Attack");
+            }
+            else                        //ガード
+            {
+                MonsterAction("Gurd");
+            }
+        }
+        else if (monster == "Rare")     //攻撃、ガード
+        {
+            if (value < 80)             //攻撃
+            {
+                MonsterAction("Attack");
+            }
+            else                        //ガード
+            {
+                MonsterAction("Gurd");
+            }
+        }
+        else if (monster == "Run")      //攻撃、逃げる
+        {
+            if (value < 70)             //攻撃 
+            {
+                MonsterAction("Attack");
+            }
+            else                        //逃げる
+            {
+                MonsterAction("Run");
+            }
+        }
+        else                            //攻撃、ガード、特殊攻撃
+        {
+            if (value < 60)             //攻撃
+            {
+                MonsterAction("Attack");
+            }
+            else if (value < 90)        //特殊攻撃
+            {
+                MonsterAction("Special");
+            }
+            else                        //ガード
+            {
+                MonsterAction("Gurd");
+            }
+        }
+    }
+
+    private IEnumerator MonsterAction(string actionCommand)
+    {
+        //1=攻撃、2=特殊攻撃、3=ガード、4=逃げる
+        yield return new WaitForSeconds(commandDelay);
+
+        if (actionCommand == "Attack")
         {}
-        else if (monster == "Zako1")//攻撃、ガード
+        else if (actionCommand == "Special")
         {}
-        else if (monster == "Zako2")//攻撃、ガード
+        else if (actionCommand == "Gurd") 
         {}
-        else if (monster == "Rare")//攻撃、ガード
+        else 
         {}
-        else if (monster == "Run")//攻撃、逃げる
-        {}
-        else//攻撃、ガード、特殊攻撃
-        {}
+
     }
 
     //バトルログテキストの追加
@@ -390,6 +495,10 @@ public class ButtleSystem : MonoBehaviour
         GameObject logEntry = Instantiate(battleLogTextPrefab, battleLogContainer);
         TextMeshProUGUI logText = logEntry.GetComponent<TextMeshProUGUI>();
         logText.text = message;
+
+        // 追加後にスクロールを一番下に
+        Canvas.ForceUpdateCanvases();
+        scrollRect.verticalNormalizedPosition = 0f;
     }
 
 }
