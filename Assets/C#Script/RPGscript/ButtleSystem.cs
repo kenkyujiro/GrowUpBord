@@ -33,6 +33,8 @@ public class ButtleSystem : MonoBehaviour
 
     public GameObject monsterStatus;        //モンスターステータスの参照
     private MonsterStatus monsterST;
+    bool player_gurd = false;
+    bool monster_gurd = false;
 
     public GameObject AttackButton;         //各コマンドボタン
     public GameObject SPAttackButton;
@@ -168,19 +170,22 @@ public class ButtleSystem : MonoBehaviour
 
     private IEnumerator AttackCoroutine()
     {
+        int Attackpower = 0;
 
         yield return new WaitForSeconds(commandDelay);
 
-        if (playerST == null)
-        {
-            Debug.LogError("playerST is null");
-        }
-        if (monsterST == null)
-        {
-            Debug.LogError("monsterST is null");
-        }
+        System.Random random = new System.Random();
+        int value = random.Next(0, 100);//0～99の乱数を生成
 
-        int Attackpower = playerST.power - monsterST.monster_defence;
+        //一定の確率で防御貫通＋2倍の攻撃力になる
+        if (value < playerST.luck)
+        {
+            Attackpower = playerST.power * 2;
+        }
+        else
+        {
+            Attackpower = playerST.power - monsterST.monster_defence;
+        }
 
         //もし0以下になった場合は1だけ減らすようにする
         if (Attackpower <= 0)
@@ -203,9 +208,9 @@ public class ButtleSystem : MonoBehaviour
             AddBattleLog("You Get" + monsterST.monster_EXP + "EXP!");
 
             //経験値が一定以上になったら
-            if (playerST.exp >= 40)
+            if (playerST.exp >= 4 * playerST.Level)
             {
-                playerST.exp -= 40;
+                playerST.exp -= 4 * playerST.Level;
                 playerST.Levelup();
 
                 AddBattleLog("Level UP!");
@@ -214,14 +219,14 @@ public class ButtleSystem : MonoBehaviour
                 //一度に40以上の経験値を貰った場合の対処
                 while (true)
                {
-                    if (playerST.exp < 40)
+                    if (playerST.exp < 4 * playerST.Level)
                     {
                         //表記上にもレベルを反映
                         playerST_TX.changeLevel(playerST.Level);
                         break;
                     }
                     AddBattleLog("Level UP!");
-                    playerST.exp -= 40;
+                    playerST.exp -= 4 * playerST.Level;
                     playerST.Levelup();
                     yield return new WaitForSeconds(commandDelay);
                 }
@@ -236,12 +241,6 @@ public class ButtleSystem : MonoBehaviour
         {
             //モンスターのターン
             monsterTurn(save_monster);
-
-            //コマンドボタンの表示
-            AttackButton.gameObject.SetActive(true);
-            SPAttackButton.gameObject.SetActive(true);
-            GurdButton.gameObject.SetActive(true);
-            RunButton.gameObject.SetActive(true);
         }
     }
 
@@ -277,9 +276,9 @@ public class ButtleSystem : MonoBehaviour
             yield return new WaitForSeconds(commandDelay);
 
             //経験値が一定以上になったら
-            if (playerST.exp >= 40)
+            if (playerST.exp >= 4 * playerST.Level)
             {
-                playerST.exp -= 40;
+                playerST.exp -= 4 * playerST.Level;
                 playerST.Levelup();
 
                 AddBattleLog("Level UP!");
@@ -289,14 +288,14 @@ public class ButtleSystem : MonoBehaviour
                 //一度に40以上の経験値を貰った場合の対処
                 while (true)
                 {
-                    if (playerST.exp < 40)
+                    if (playerST.exp < 4 * playerST.Level)
                     {
                         //表記上にもレベルを反映
                         playerST_TX.changeLevel(playerST.Level);
                         break;
                     }
                     AddBattleLog("Level UP!");
-                    playerST.exp -= 40;
+                    playerST.exp -= 4 * playerST.Level;
                     playerST.Levelup();
                     yield return new WaitForSeconds(commandDelay);
                 }
@@ -311,12 +310,6 @@ public class ButtleSystem : MonoBehaviour
         {
             //モンスターのターン
             monsterTurn(save_monster);
-
-            //コマンドボタンの表示
-            AttackButton.gameObject.SetActive(true);
-            SPAttackButton.gameObject.SetActive(true);
-            GurdButton.gameObject.SetActive(true);
-            RunButton.gameObject.SetActive(true);
         }
     }
 
@@ -341,17 +334,10 @@ public class ButtleSystem : MonoBehaviour
 
         //一時的にディフェンスを上げる
         playerST.defence += 10;
+        player_gurd = true;
 
         //モンスターのターン
         monsterTurn(save_monster);
-
-        //行動が終わったらディフェンスを下げる
-        playerST.defence -= 10;
-
-        AttackButton.gameObject.SetActive(true);
-        SPAttackButton.gameObject.SetActive(true);
-        GurdButton.gameObject.SetActive(true);
-        RunButton.gameObject.SetActive(true);
     }
 
     //逃げる
@@ -379,6 +365,40 @@ public class ButtleSystem : MonoBehaviour
 
     private void ButtleEnd()
     {
+        System.Random random = new System.Random();
+        int value = random.Next(0, 100);//0～99の乱数を生成
+
+        int heal_point = 0;
+
+        if(value < 30)
+        {
+            heal_point = 1;
+        }
+        else if(value < 60) 
+        {
+            heal_point = 20;
+        }
+        else if(value < 90) 
+        {
+            heal_point = playerST.Max_hp;
+        }
+        else
+        {
+            heal_point = 0; 
+        }
+
+        //もしかしたら出ないかも
+        AddBattleLog("You Healed" + heal_point + "HP!");
+
+        playerST.hp += heal_point;
+
+        //回復は超過しないようにする
+        if(playerST.Max_hp <= playerST.hp)
+        {
+            playerST.hp = playerST.Max_hp;
+        }
+
+
         Destroy(Monster);
         //シーンチェンジを行う
         SceneManager.LoadScene("SugorokuScene");
@@ -388,81 +408,88 @@ public class ButtleSystem : MonoBehaviour
     //逃げたと判断できる時間がほしいため、time.stopみたいなものが欲しい
     private void monsterTurn(string monster)
     {
+        //もしガードしているなら解除する
+        if(monster_gurd == true) 
+        {
+            monsterST.monster_defence -= 10;
+            monster_gurd = false;
+        }
+
         System.Random random = new System.Random();
         int value = random.Next(0, 100);//0～99の乱数を生成
 
-        if (monster == "Bison")         //攻撃、ガード、特殊攻撃
+        if (monster == "Bison")         //攻撃、特殊攻撃
         {
             if (value < 60)             //攻撃
             {
-                MonsterAction("Attack");
+                StartCoroutine(MonsterAction("Attack"));
             }
             else if (value < 90)        //特殊攻撃
             {
-                MonsterAction("Special");
+                StartCoroutine(MonsterAction("Special"));
             }
             else                        //ガード
             {
-                MonsterAction("Gurd");
+                StartCoroutine(MonsterAction("Gurd"));
             }
         }
         else if (monster == "Zako1")    //攻撃、ガード
         {
             if (value < 70)             //攻撃
             {
-                MonsterAction("Attack");
+                StartCoroutine(MonsterAction("Attack"));
             }
             else                        //ガード 
             {
-                MonsterAction("Gurd");
+                StartCoroutine(MonsterAction("Gurd"));
             }
         }
         else if (monster == "Zako2")    //攻撃、ガード
         {
             if (value < 80)             //攻撃 
             {
-                MonsterAction("Attack");
+                StartCoroutine(MonsterAction("Attack"));
             }
             else                        //ガード
             {
-                MonsterAction("Gurd");
+                StartCoroutine(MonsterAction("Gurd"));
             }
         }
         else if (monster == "Rare")     //攻撃、ガード
         {
             if (value < 80)             //攻撃
             {
-                MonsterAction("Attack");
+                StartCoroutine(MonsterAction("Attack"));
             }
             else                        //ガード
             {
-                MonsterAction("Gurd");
+                StartCoroutine(MonsterAction("Gurd"));
             }
         }
         else if (monster == "Run")      //攻撃、逃げる
         {
             if (value < 70)             //攻撃 
             {
-                MonsterAction("Attack");
+                StartCoroutine(MonsterAction("Attack"));
             }
             else                        //逃げる
             {
-                MonsterAction("Run");
+                StartCoroutine(MonsterAction("Run"));
             }
         }
         else                            //攻撃、ガード、特殊攻撃
         {
             if (value < 60)             //攻撃
             {
-                MonsterAction("Attack");
+                StartCoroutine(MonsterAction("Attack"));
             }
             else if (value < 90)        //特殊攻撃
             {
-                MonsterAction("Special");
+                StartCoroutine(MonsterAction("Special"));
             }
             else                        //ガード
             {
-                MonsterAction("Gurd");
+                StartCoroutine(MonsterAction("Gurd"));
             }
         }
     }
@@ -473,13 +500,79 @@ public class ButtleSystem : MonoBehaviour
         yield return new WaitForSeconds(commandDelay);
 
         if (actionCommand == "Attack")
-        {}
+        {
+            int Attackpower = monsterST.monster_power - playerST.defence;
+
+            //回復しないようにする
+            if (Attackpower < 0)
+            {
+                Attackpower = 0;
+            }
+
+            AddBattleLog("Player Damaged" + Attackpower + "Point!");
+
+            //パワーの分だけ減らす
+            playerST.hp -= Attackpower;
+            //表記上のHP反映
+            playerST_TX.changeHP(playerST.hp);
+
+            if (playerST.hp <= 0) 
+            {
+                AddBattleLog("You Losed...");
+
+                yield return new WaitForSeconds(commandDelay);
+
+                //ゲームオーバー画面に遷移する
+                ButtleEnd();
+            }
+        }
         else if (actionCommand == "Special")
-        {}
+        {
+            playerST.hp -= monsterST.monster_power;
+
+            AddBattleLog("Player Damaged" + monsterST.monster_power + "Point!");
+
+            //表記上のHPの反映
+            playerST_TX.changeHP(playerST.hp);
+
+            if (playerST.hp <= 0)
+            {
+                AddBattleLog("You Losed...");
+
+                yield return new WaitForSeconds(commandDelay);
+
+                //ゲームオーバー画面に遷移する
+                ButtleEnd();
+            }
+        }
         else if (actionCommand == "Gurd") 
-        {}
+        {
+            monsterST.monster_defence += 10;
+            monster_gurd = true;
+
+            AddBattleLog("Monster Gurded!");
+        }
         else 
-        {}
+        {
+            AddBattleLog("Monster RunAway!");
+
+            ButtleEnd();
+        }
+
+        yield return new WaitForSeconds(commandDelay);
+
+        if(player_gurd == true)
+        {
+            //行動が終わったらディフェンスを下げる
+            playerST.defence -= 10;
+            player_gurd = false;
+        }
+
+        //コマンドボタンの表示
+        AttackButton.gameObject.SetActive(true);
+        SPAttackButton.gameObject.SetActive(true);
+        GurdButton.gameObject.SetActive(true);
+        RunButton.gameObject.SetActive(true);
 
     }
 
