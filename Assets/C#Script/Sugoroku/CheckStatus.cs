@@ -15,6 +15,8 @@ public class CheckStatus : MonoBehaviour
     public TextMeshProUGUI Player_Luck;
     public TextMeshProUGUI Player_EXP;
 
+    //AIのステータスも追加する
+
     void Start()
     {
         gameObject.SetActive(false);

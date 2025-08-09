@@ -31,6 +31,10 @@ public class ButtleSystem : MonoBehaviour
     private PlayerStatus playerST;
     private PlayerStatusManager playerST_TX;//表記上のプレイヤーステータス
 
+    public GameObject aiStatus;
+    private AIStatus AIST;
+    private AIStatusManager AIST_TX;
+
     public GameObject monsterStatus;        //モンスターステータスの参照
     private MonsterStatus monsterST;
     bool player_gurd = false;
@@ -68,11 +72,14 @@ public class ButtleSystem : MonoBehaviour
     {
         //オブジェクトの取得
         playerStatus = GameObject.Find("PlayerStatus");
+        aiStatus = GameObject.Find("AIStatus");
 
         //プレイヤーステータス(hp,powerなど)の取得
         playerST = playerStatus.GetComponent<PlayerStatus>();
         playerST_TX = playerStatus.GetComponent<PlayerStatusManager>();
         monsterST = monsterStatus.GetComponent<MonsterStatus>();
+        AIST = aiStatus.GetComponent<AIStatus>();
+        AIST_TX = aiStatus.GetComponent<AIStatusManager>();
 
         //ステータスの反映
         playerST_TX.changeHP(playerST.hp);
@@ -239,6 +246,8 @@ public class ButtleSystem : MonoBehaviour
         }
         else
         {
+            //AIのターン
+            AllyTurn();
             //モンスターのターン
             monsterTurn(save_monster);
         }
@@ -308,6 +317,8 @@ public class ButtleSystem : MonoBehaviour
         }
         else
         {
+            //AIのターン
+            AllyTurn();
             //モンスターのターン
             monsterTurn(save_monster);
         }
@@ -335,6 +346,9 @@ public class ButtleSystem : MonoBehaviour
         //一時的にディフェンスを上げる
         playerST.defence += 10;
         player_gurd = true;
+
+        //AIのターン
+        AllyTurn();
 
         //モンスターのターン
         monsterTurn(save_monster);
@@ -574,6 +588,67 @@ public class ButtleSystem : MonoBehaviour
         GurdButton.gameObject.SetActive(true);
         RunButton.gameObject.SetActive(true);
 
+    }
+
+    // ButtleSystem.cs の中
+    void AllyTurn()
+    {
+        System.Random random = new System.Random();
+        int value = random.Next(0, 100);
+
+        // 状況に応じて行動を決定
+        // 1. HPが30%以下なら回復優先（70%の確率で回復）
+        if (AIST.hp < AIST.maxHP * 0.3f)
+        {
+            Heal();
+        }
+        // 2. 敵がガード中ならガード貫通攻撃優先
+        else if (monster_gurd)
+        {
+            if (value < 0.6f) // 60%でガード貫通
+                GuardBreakAttack();
+            else
+                NormalAttack();
+        }
+        // 3. 敵が強攻撃準備中ならガード
+        else
+        {
+            float rand = value;
+            //60%で通常攻撃
+            if (rand < 0.6f)
+                NormalAttack();
+            //20%でガード
+            else if (rand < 0.8f)
+                Guard();
+            //20%で特殊攻撃
+            else
+                GuardBreakAttack();
+        }
+    }
+
+    void NormalAttack()
+    {
+        Debug.Log("味方が攻撃！");
+        // 攻撃処理
+    }
+
+    void Guard()
+    {
+        Debug.Log("味方がガード！");
+        // ガード処理
+    }
+
+    void GuardBreakAttack()
+    {
+        Debug.Log("味方がガード貫通攻撃！");
+        // ガード貫通処理
+    }
+
+    void Heal()
+    {
+        Debug.Log("味方が回復！");
+        AIST.hp += 30; // 回復量
+        if (AIST.hp > AIST.maxHP) AIST.hp = AIST.maxHP;
     }
 
     //バトルログテキストの追加
