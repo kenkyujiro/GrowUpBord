@@ -38,6 +38,7 @@ public class ButtleSystem : MonoBehaviour
     public GameObject monsterStatus;        //モンスターステータスの参照
     private MonsterStatus monsterST;
     bool player_gurd = false;
+    bool ai_gurd = false;
     bool monster_gurd = false;
 
     public GameObject AttackButton;         //各コマンドボタン
@@ -248,8 +249,6 @@ public class ButtleSystem : MonoBehaviour
         {
             //AIのターン
             AllyTurn();
-            //モンスターのターン
-            monsterTurn(save_monster);
         }
     }
 
@@ -319,8 +318,6 @@ public class ButtleSystem : MonoBehaviour
         {
             //AIのターン
             AllyTurn();
-            //モンスターのターン
-            monsterTurn(save_monster);
         }
     }
 
@@ -349,9 +346,6 @@ public class ButtleSystem : MonoBehaviour
 
         //AIのターン
         AllyTurn();
-
-        //モンスターのターン
-        monsterTurn(save_monster);
     }
 
     //逃げる
@@ -626,29 +620,116 @@ public class ButtleSystem : MonoBehaviour
         }
     }
 
-    void NormalAttack()
+    private IEnumerator NormalAttack()
     {
         Debug.Log("味方が攻撃！");
         // 攻撃処理
+        int Attackpower = 0;
+
+        yield return new WaitForSeconds(commandDelay);
+
+        System.Random random = new System.Random();
+        int value = random.Next(0, 100);//0～99の乱数を生成
+
+        //一定の確率で防御貫通＋2倍の攻撃力になる
+        if (value < playerST.luck)
+        {
+            Attackpower = AIST.power * 2;
+        }
+        else
+        {
+            Attackpower = AIST.power - monsterST.monster_defence;
+        }
+
+        //もし0以下になった場合は1だけ減らすようにする
+        if (Attackpower <= 0)
+        {
+            Attackpower = 1;
+        }
+
+        AddBattleLog("Friend Give" + Attackpower + "Point!");
+
+        //パワーの分だけ減らす
+        monsterST.monster_hp -= Attackpower;
+
+        //相手の体力がなくなったら
+        if (monsterST.monster_hp <= 0)
+        {
+            playerST.exp += monsterST.monster_EXP;
+
+            AddBattleLog("You Get" + monsterST.monster_EXP + "EXP!");
+
+            yield return new WaitForSeconds(commandDelay);
+
+            //経験値が一定以上になったら
+            if (playerST.exp >= 4 * playerST.Level)
+            {
+                playerST.exp -= 4 * playerST.Level;
+                playerST.Levelup();
+
+                AddBattleLog("Level UP!");
+
+                yield return new WaitForSeconds(commandDelay);
+
+                //一度に40以上の経験値を貰った場合の対処
+                while (true)
+                {
+                    if (playerST.exp < 4 * playerST.Level)
+                    {
+                        //表記上にもレベルを反映
+                        playerST_TX.changeLevel(playerST.Level);
+                        break;
+                    }
+                    AddBattleLog("Level UP!");
+                    playerST.exp -= 4 * playerST.Level;
+                    playerST.Levelup();
+                    yield return new WaitForSeconds(commandDelay);
+                }
+            }
+
+            //表記上にも経験値/HPを反映
+            playerST_TX.changeEXP(playerST.exp);
+            playerST_TX.changeHP(playerST.hp);
+            ButtleEnd();
+        }
+        else
+        {
+            //モンスターのターン
+            monsterTurn(save_monster);
+        }
     }
 
-    void Guard()
+    private IEnumerator Guard()
     {
         Debug.Log("味方がガード！");
         // ガード処理
+        AddBattleLog("Friend Gurd!");
+
+        yield return new WaitForSeconds(commandDelay);
+
+        //一時的にディフェンスを上げる
+        AIST.defence += 10;
+        ai_gurd = true;
+
+        //モンスターのターン
+        monsterTurn(save_monster);
     }
 
-    void GuardBreakAttack()
+    //ここからできてない
+    private IEnumerator GuardBreakAttack()
     {
         Debug.Log("味方がガード貫通攻撃！");
         // ガード貫通処理
+        yield return new WaitForSeconds(commandDelay);
     }
 
-    void Heal()
+    private IEnumerator Heal()
     {
         Debug.Log("味方が回復！");
         AIST.hp += 30; // 回復量
         if (AIST.hp > AIST.maxHP) AIST.hp = AIST.maxHP;
+
+        yield return new WaitForSeconds(commandDelay);
     }
 
     //バトルログテキストの追加
