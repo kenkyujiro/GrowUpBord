@@ -15,6 +15,7 @@ public class PlayerStatus : MonoBehaviour
     public int Max_hp = 20;
     public int Level = 1;//疑似乱数で作る
     public int exp = 0;
+    public int mp = 25;
 
     public void Awake()
     {
@@ -51,6 +52,7 @@ public class PlayerStatus : MonoBehaviour
         powerUp("hp", 3, "0", 0);
         //レベルアップ時は完全回復
         hp = Max_hp;
+        mp = 25;
     }
 
     //二つ要素があるのは装備用

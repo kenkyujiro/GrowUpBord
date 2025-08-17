@@ -55,7 +55,7 @@ public class ButtleSystem : MonoBehaviour
     public Vector2 spawnPosition;
 
     //コマンドのディレイ
-    private float commandDelay = 0.5f;
+    private float commandDelay = 1.5f;
 
     private void OnEnable()
     {
@@ -247,8 +247,16 @@ public class ButtleSystem : MonoBehaviour
         }
         else
         {
-            //AIのターン
-            AllyTurn();
+            if(AIST.hp >= 0)
+            {
+                //AIのターン
+                AllyTurn();
+            }
+            else
+            {
+                //モンスターのターン
+                monsterTurn(save_monster);
+            }
         }
     }
 
@@ -260,7 +268,23 @@ public class ButtleSystem : MonoBehaviour
         GurdButton.gameObject.SetActive(false);
         RunButton.gameObject.SetActive(false);
 
-        StartCoroutine(SpecialAttackCoroutine());
+        //mpがないと撃てないようにする
+        if(playerST.mp >= 5)
+        {
+            playerST.mp -= 5;
+            StartCoroutine(SpecialAttackCoroutine());
+        }
+        else
+        {
+            AddBattleLog("You none MP!");
+
+            //コマンドボタンの表示
+            AttackButton.gameObject.SetActive(true);
+            SPAttackButton.gameObject.SetActive(true);
+            GurdButton.gameObject.SetActive(true);
+            RunButton.gameObject.SetActive(true);
+        }
+
     }
 
     private IEnumerator SpecialAttackCoroutine()
@@ -316,8 +340,16 @@ public class ButtleSystem : MonoBehaviour
         }
         else
         {
-            //AIのターン
-            AllyTurn();
+            if (AIST.hp >= 0)
+            {
+                //AIのターン
+                AllyTurn();
+            }
+            else
+            {
+                //モンスターのターン
+                monsterTurn(save_monster);
+            }
         }
     }
 
@@ -344,8 +376,16 @@ public class ButtleSystem : MonoBehaviour
         playerST.defence += 10;
         player_gurd = true;
 
-        //AIのターン
-        AllyTurn();
+        if (AIST.hp >= 0)
+        {
+            //AIのターン
+            AllyTurn();
+        }
+        else
+        {
+            //モンスターのターン
+            monsterTurn(save_monster);
+        }
     }
 
     //逃げる
@@ -504,53 +544,106 @@ public class ButtleSystem : MonoBehaviour
 
     private IEnumerator MonsterAction(string actionCommand)
     {
+        //ランダムで攻撃対象を決める
+        System.Random random = new System.Random();
+        int value = random.Next(0, 1);
+
         //1=攻撃、2=特殊攻撃、3=ガード、4=逃げる
         yield return new WaitForSeconds(commandDelay);
 
         if (actionCommand == "Attack")
         {
-            int Attackpower = monsterST.monster_power - playerST.defence;
+            int Attackpower;
 
-            //回復しないようにする
-            if (Attackpower < 0)
+            //対象：プレイヤー
+            if(value == 0)
             {
-                Attackpower = 0;
+                Attackpower = monsterST.monster_power - playerST.defence;
+
+                //回復しないようにする
+                if (Attackpower < 0)
+                {
+                    Attackpower = 1;
+                }
+
+                AddBattleLog("Player Damaged" + Attackpower + "Point!");
+
+                //パワーの分だけ減らす
+                playerST.hp -= Attackpower;
+                //表記上のHP反映
+                playerST_TX.changeHP(playerST.hp);
+
+                if (playerST.hp <= 0)
+                {
+                    AddBattleLog("You Losed...");
+
+                    yield return new WaitForSeconds(commandDelay);
+
+                    //ゲームオーバー画面に遷移する
+                    ButtleEnd();
+                }
             }
-
-            AddBattleLog("Player Damaged" + Attackpower + "Point!");
-
-            //パワーの分だけ減らす
-            playerST.hp -= Attackpower;
-            //表記上のHP反映
-            playerST_TX.changeHP(playerST.hp);
-
-            if (playerST.hp <= 0) 
+            else
             {
-                AddBattleLog("You Losed...");
+                Attackpower = monsterST.monster_power - AIST.defence;
 
-                yield return new WaitForSeconds(commandDelay);
+                if(Attackpower < 0)
+                {
+                    Attackpower = 1;
+                }
 
-                //ゲームオーバー画面に遷移する
-                ButtleEnd();
+                AddBattleLog("Friend Damaged" + Attackpower + "Point!");
+
+                //パワーの分だけ減らす
+                AIST.hp -= Attackpower;
+                //表記上のHP反映
+                AIST_TX.changeHP(AIST.hp);
+
+                if (AIST.hp <= 0)
+                {
+                    AddBattleLog("Friend Losed...");
+
+                    yield return new WaitForSeconds(commandDelay);
+                }
             }
+            
         }
         else if (actionCommand == "Special")
         {
-            playerST.hp -= monsterST.monster_power;
-
-            AddBattleLog("Player Damaged" + monsterST.monster_power + "Point!");
-
-            //表記上のHPの反映
-            playerST_TX.changeHP(playerST.hp);
-
-            if (playerST.hp <= 0)
+            if (value == 0)
             {
-                AddBattleLog("You Losed...");
+                playerST.hp -= monsterST.monster_power;
 
-                yield return new WaitForSeconds(commandDelay);
+                AddBattleLog("Player Damaged" + monsterST.monster_power + "Point!");
 
-                //ゲームオーバー画面に遷移する
-                ButtleEnd();
+                //表記上のHPの反映
+                playerST_TX.changeHP(playerST.hp);
+
+                if (playerST.hp <= 0)
+                {
+                    AddBattleLog("You Losed...");
+
+                    yield return new WaitForSeconds(commandDelay);
+
+                    //ゲームオーバー画面に遷移する
+                    ButtleEnd();
+                }
+            }
+            else 
+            {
+                AIST.hp -= monsterST.monster_power;
+
+                AddBattleLog("Friend Damaged" + monsterST.monster_power + "Point!");
+
+                //表記上のHPの反映
+                AIST_TX.changeHP(AIST.hp);
+
+                if (AIST.hp <= 0)
+                {
+                    AddBattleLog("Friend Losed...");
+
+                    yield return new WaitForSeconds(commandDelay);
+                }
             }
         }
         else if (actionCommand == "Gurd") 
@@ -575,6 +668,12 @@ public class ButtleSystem : MonoBehaviour
             playerST.defence -= 10;
             player_gurd = false;
         }
+        if (ai_gurd == true)
+        {
+            //行動が終わったらディフェンスを下げる
+            AIST.defence -= 10;
+            ai_gurd = false;
+        }
 
         //コマンドボタンの表示
         AttackButton.gameObject.SetActive(true);
@@ -594,15 +693,15 @@ public class ButtleSystem : MonoBehaviour
         // 1. HPが30%以下なら回復優先（70%の確率で回復）
         if (AIST.hp < AIST.maxHP * 0.3f)
         {
-            Heal();
+            StartCoroutine(Heal());
         }
         // 2. 敵がガード中ならガード貫通攻撃優先
         else if (monster_gurd)
         {
             if (value < 0.6f) // 60%でガード貫通
-                GuardBreakAttack();
+                StartCoroutine(GuardBreakAttack());
             else
-                NormalAttack();
+                StartCoroutine(NormalAttack());
         }
         // 3. 敵が強攻撃準備中ならガード
         else
@@ -610,13 +709,13 @@ public class ButtleSystem : MonoBehaviour
             float rand = value;
             //60%で通常攻撃
             if (rand < 0.6f)
-                NormalAttack();
+                StartCoroutine(NormalAttack());
             //20%でガード
             else if (rand < 0.8f)
-                Guard();
+                StartCoroutine(Guard());
             //20%で特殊攻撃
             else
-                GuardBreakAttack();
+                StartCoroutine(GuardBreakAttack());
         }
     }
 
@@ -715,21 +814,80 @@ public class ButtleSystem : MonoBehaviour
         monsterTurn(save_monster);
     }
 
-    //ここからできてない
     private IEnumerator GuardBreakAttack()
     {
         Debug.Log("味方がガード貫通攻撃！");
         // ガード貫通処理
         yield return new WaitForSeconds(commandDelay);
+
+        AddBattleLog("Friend Give" + playerST.power + "Point!");
+
+        //パワーの分だけ減らす
+        monsterST.monster_hp -= AIST.power;
+
+        yield return new WaitForSeconds(commandDelay);
+
+        //相手の体力がなくなったら
+        if (monsterST.monster_hp <= 0)
+        {
+            playerST.exp += monsterST.monster_EXP;
+
+            AddBattleLog("You Get" + monsterST.monster_EXP + "EXP!");
+
+            yield return new WaitForSeconds(commandDelay);
+
+            //経験値が一定以上になったら
+            if (playerST.exp >= 4 * playerST.Level)
+            {
+                playerST.exp -= 4 * playerST.Level;
+                playerST.Levelup();
+
+                AddBattleLog("Level UP!");
+
+                yield return new WaitForSeconds(commandDelay);
+
+                //一度に40以上の経験値を貰った場合の対処
+                while (true)
+                {
+                    if (playerST.exp < 4 * playerST.Level)
+                    {
+                        //表記上にもレベルを反映
+                        playerST_TX.changeLevel(playerST.Level);
+                        break;
+                    }
+                    AddBattleLog("Level UP!");
+                    playerST.exp -= 4 * playerST.Level;
+                    playerST.Levelup();
+                    yield return new WaitForSeconds(commandDelay);
+                }
+            }
+
+            //表記上にも経験値/HPを反映
+            playerST_TX.changeEXP(playerST.exp);
+            playerST_TX.changeHP(playerST.hp);
+            ButtleEnd();
+        }
+        else
+        {
+            //モンスターのターン
+            monsterTurn(save_monster);
+        }
+
     }
 
     private IEnumerator Heal()
     {
         Debug.Log("味方が回復！");
         AIST.hp += 30; // 回復量
-        if (AIST.hp > AIST.maxHP) AIST.hp = AIST.maxHP;
+        if (AIST.hp > AIST.maxHP)
+        { 
+            AIST.hp = AIST.maxHP;
+        }
 
         yield return new WaitForSeconds(commandDelay);
+
+        //モンスターのターン
+        monsterTurn(save_monster);
     }
 
     //バトルログテキストの追加
