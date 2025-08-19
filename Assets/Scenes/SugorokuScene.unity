@@ -343,6 +343,8 @@ MonoBehaviour:
   Max_hp: 20
   Level: 1
   exp: 0
+  mp: 25
+  how_clear: 0
 --- !u!4 &49231228
 Transform:
   m_ObjectHideFlags: 0
@@ -3540,10 +3542,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 184dd0a8da8a1a54997e9de6f0463995, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GameManager: {fileID: 1223091728}
+  GameManager: {fileID: 0}
   DiceSystem: {fileID: 1559518579}
   uiManager: {fileID: 1175397556}
   EventManager: {fileID: 1454332070}
+  playerStatus: {fileID: 0}
   GoPiece: 0
   How_Branch: 0
   canClick: 0
@@ -4970,7 +4973,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 40}
+  m_AnchoredPosition: {x: 0, y: 500}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1234086416
@@ -7034,6 +7037,7 @@ MonoBehaviour:
   power: 5
   defence: 10
   luck: 0
+  mp: 25
 --- !u!4 &1643973979
 Transform:
   m_ObjectHideFlags: 0

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.ConstrainedExecution;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -240,7 +241,7 @@ public class ButtleSystem : MonoBehaviour
                 }
             }
 
-            //ステータスを表記上にも反映
+            //表記上にも経験値/HPを反映
             playerST_TX.changeEXP(playerST.exp);
             playerST_TX.changeHP(playerST.hp);
             ButtleEnd();
@@ -396,7 +397,14 @@ public class ButtleSystem : MonoBehaviour
         GurdButton.gameObject.SetActive(false);
         RunButton.gameObject.SetActive(false);
 
-        StartCoroutine(RunCoroutine());
+        if (save_monster == "Boss")
+        {
+            AddBattleLog("逃げられない！");
+        }
+        else
+        {
+            StartCoroutine(RunCoroutine());
+        }
     }
 
     private IEnumerator RunCoroutine()
@@ -407,7 +415,6 @@ public class ButtleSystem : MonoBehaviour
 
         yield return new WaitForSeconds(commandDelay);
 
-        //if (monster = "Boss") { }
         ButtleEnd();
     }
 
@@ -446,6 +453,10 @@ public class ButtleSystem : MonoBehaviour
             playerST.hp = playerST.Max_hp;
         }
 
+        if(save_monster == "Boss")
+        {
+            playerST.how_clear = true;
+        }
 
         Destroy(Monster);
         //シーンチェンジを行う

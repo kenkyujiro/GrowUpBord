@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Runtime.ConstrainedExecution;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -23,6 +24,9 @@ public class MovePiece : MonoBehaviour
 
     public GameObject EventManager;    //イベント管理用
     private EventManager eventManager;
+
+    public GameObject playerStatus;         //プレイヤーステータスの参照(ゲームクリア確認用)
+    private PlayerStatus playerST;
 
     public int GoPiece;                //進める出目の数
     private bool How_First;            //始めてのダイスロールかどうか
@@ -60,7 +64,7 @@ public class MovePiece : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        GameManager = GameObject.Find("GameClearManager");
+        GameManager = GameObject.Find("Gamemanager");
         DiceSystem = GameObject.Find("DiceSystem");
         uiManager = GameObject.Find("UIManager");
         EventManager = GameObject.Find("EventManager");
@@ -69,6 +73,16 @@ public class MovePiece : MonoBehaviour
         rollSystem = DiceSystem?.GetComponent<DiceRollSystem>();
         uiManage = uiManager?.GetComponent<UIManager>();
         eventManager = EventManager?.GetComponent<EventManager>();
+
+        //ゲームクリア確認用
+        playerStatus = GameObject.Find("PlayerStatus");
+        playerST = playerStatus.GetComponent<PlayerStatus>();
+
+        if(playerST.how_clear == true)
+        {
+            Debug.Log("ゲームクリア!!");
+            clear.GameClear();
+        }
     }
 
     public void GetValue() 
@@ -113,8 +127,7 @@ public class MovePiece : MonoBehaviour
             if(transform.position.x == -6) 
             {
                 GoPiece = 0;
-                Debug.Log("ゲームクリア!!");
-                clear.GameClear();
+                Debug.Log("ラストバトルだ！");
             }
             if(GoPiece == 0 && howClear != true)//出目分すすみおわったら表示する
             {
