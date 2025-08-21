@@ -13,9 +13,6 @@ public class MovePiece : MonoBehaviour
 {
     public static MovePiece Instance { get; private set; }
 
-    public GameObject GameManager;     //ゲームクリアscriptへ参照用
-    private GameClearManager clear;
-
     public GameObject DiceSystem;      //出目テキスト参照用
     private DiceRollSystem rollSystem;
 
@@ -64,12 +61,10 @@ public class MovePiece : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        GameManager = GameObject.Find("Gamemanager");
         DiceSystem = GameObject.Find("DiceSystem");
         uiManager = GameObject.Find("UIManager");
         EventManager = GameObject.Find("EventManager");
 
-        clear = GameManager?.GetComponent<GameClearManager>();
         rollSystem = DiceSystem?.GetComponent<DiceRollSystem>();
         uiManage = uiManager?.GetComponent<UIManager>();
         eventManager = EventManager?.GetComponent<EventManager>();
@@ -77,12 +72,6 @@ public class MovePiece : MonoBehaviour
         //ゲームクリア確認用
         playerStatus = GameObject.Find("PlayerStatus");
         playerST = playerStatus.GetComponent<PlayerStatus>();
-
-        if(playerST.how_clear == true)
-        {
-            Debug.Log("ゲームクリア!!");
-            clear.GameClear();
-        }
     }
 
     public void GetValue() 

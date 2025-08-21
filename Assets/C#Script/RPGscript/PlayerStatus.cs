@@ -16,7 +16,6 @@ public class PlayerStatus : MonoBehaviour
     public int Level = 1;//‹^——”‚Åì‚é
     public int exp = 0;
     public int mp = 25;
-    public bool how_clear = false; 
 
     public void Awake()
     {

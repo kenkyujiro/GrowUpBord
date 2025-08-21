@@ -50,6 +50,9 @@ public class ButtleSystem : MonoBehaviour
     public GameObject battleLogTextPrefab;  // 行動表示テキストのプレハブ
     public Transform battleLogContainer;    // テキスト表示先の親
 
+    public GameObject GameManager;     //ゲームクリアscriptへ参照用
+    private GameClearManager clear;
+
     private int maxLogCount = 30;
     public ScrollRect scrollRect;           //ScrollViewのScrollRect
 
@@ -75,6 +78,7 @@ public class ButtleSystem : MonoBehaviour
         //オブジェクトの取得
         playerStatus = GameObject.Find("PlayerStatus");
         aiStatus = GameObject.Find("AIStatus");
+        GameManager = GameObject.Find("Gamemanager");
 
         //プレイヤーステータス(hp,powerなど)の取得
         playerST = playerStatus.GetComponent<PlayerStatus>();
@@ -82,6 +86,7 @@ public class ButtleSystem : MonoBehaviour
         monsterST = monsterStatus.GetComponent<MonsterStatus>();
         AIST = aiStatus.GetComponent<AIStatus>();
         AIST_TX = aiStatus.GetComponent<AIStatusManager>();
+        clear = GameManager.GetComponent<GameClearManager>();
 
         //ステータスの反映
         playerST_TX.changeHP(playerST.hp);
@@ -453,18 +458,21 @@ public class ButtleSystem : MonoBehaviour
             playerST.hp = playerST.Max_hp;
         }
 
-        if(save_monster == "Boss")
-        {
-            playerST.how_clear = true;
-        }
-
         Destroy(Monster);
-        //シーンチェンジを行う
-        SceneManager.LoadScene("SugorokuScene");
+
+        //ボスを撃破している場合はゲームクリアになる
+        if (save_monster == "Boss")
+        {
+            Debug.Log("ゲームクリア!!");
+            clear.GameClear();
+        }
+        else
+        {
+            //シーンチェンジを行う
+            SceneManager.LoadScene("SugorokuScene");
+        }
     }
 
-    //モンスターによって行動を変化させる
-    //逃げたと判断できる時間がほしいため、time.stopみたいなものが欲しい
     private void monsterTurn(string monster)
     {
         //もしガードしているなら解除する
@@ -637,7 +645,7 @@ public class ButtleSystem : MonoBehaviour
                     yield return new WaitForSeconds(commandDelay);
 
                     //ゲームオーバー画面に遷移する
-                    ButtleEnd();
+                    SceneManager.LoadScene("GameOverScene");
                 }
             }
             else 

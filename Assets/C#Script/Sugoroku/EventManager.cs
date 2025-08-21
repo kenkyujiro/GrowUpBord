@@ -16,7 +16,7 @@ public class EventManager : MonoBehaviour
     public void IgnitionEvent(float x_pos, float y_pos)
     {
         //x (-5`7)(yF-1‚Ì‚İ)A y (-1`3)(xF-2`3‚Ì‚İ)
-        //•ªŠòÅ‰(-2 -1) •ªŠòÅŒã(3 -1) -1`2
+        //•ªŠòÅ‰(-2 -1) •ªŠòÅŒã(3 -1)
         if (y_pos == 3)//‹­“Gƒ][ƒ“
         {
             System.Random random = new System.Random();
