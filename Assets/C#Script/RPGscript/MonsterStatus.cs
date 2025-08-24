@@ -5,6 +5,7 @@ using UnityEngine;
 public class MonsterStatus : MonoBehaviour
 {
     public int monster_hp;
+    public int monster_maxHp;
     public int monster_power;
     public int monster_defence;
     public int monster_EXP;
@@ -14,6 +15,7 @@ public class MonsterStatus : MonoBehaviour
         if (monster == "Bison")//‹­“G
         {
             monster_hp = 50;
+            monster_maxHp = 50;
             monster_power = 7;
             monster_defence = 3;
             monster_EXP = 20;
@@ -21,6 +23,7 @@ public class MonsterStatus : MonoBehaviour
         else if (monster == "Zako1")//•’Ê‚ÌG‹›
         {
             monster_hp = 10;
+            monster_maxHp = 10;
             monster_power = 2;
             monster_defence = 1;
             monster_EXP = 4;
@@ -28,6 +31,7 @@ public class MonsterStatus : MonoBehaviour
         else if (monster == "Zako2")//UŒ‚—Í‚ª‹­‚¢G‹›(ƒhƒ‰ƒL[)
         {
             monster_hp = 30;
+            monster_maxHp = 30;
             monster_power = 5;
             monster_defence = 1;
             monster_EXP = 10;
@@ -35,6 +39,7 @@ public class MonsterStatus : MonoBehaviour
         else if (monster == "Rare")//ƒhƒƒbƒv‚·‚é‚©‚à‚µ‚ê‚È‚¢“G
         {
             monster_hp = 20;
+            monster_maxHp = 20;
             monster_power = 2;
             monster_defence = 1;
             monster_EXP = 4;
@@ -42,6 +47,7 @@ public class MonsterStatus : MonoBehaviour
         else if (monster == "Run")//“¦‚°‚é“G
         {
             monster_hp = 5;
+            monster_maxHp = 5;
             monster_power = 1;
             monster_defence = 10;
             monster_EXP = 1000;
@@ -49,6 +55,7 @@ public class MonsterStatus : MonoBehaviour
         else//Boss
         {
             monster_hp = 100;
+            monster_maxHp = 100;
             monster_power = 10;
             monster_defence = 5;
             monster_EXP = 4;

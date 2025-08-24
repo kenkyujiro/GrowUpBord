@@ -3,9 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.ConstrainedExecution;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using static UnityEditor.Progress;
+using static UnityEngine.EventSystems.EventTrigger;
 
 //やらなければいけないこと
 //コルーチンがほしい
@@ -36,11 +39,19 @@ public class ButtleSystem : MonoBehaviour
     private AIStatus AIST;
     private AIStatusManager AIST_TX;
 
+    private AllyAI allyAI = new AllyAI();   //AI本体の定義
+
     public GameObject monsterStatus;        //モンスターステータスの参照
     private MonsterStatus monsterST;
     bool player_gurd = false;
     bool ai_gurd = false;
     bool monster_gurd = false;
+
+    //AIの特殊攻撃のクールタイム
+    private int AIguardBreakCooldown = 0;   // 0 の時は使用可能
+    private const int AIguardBreakCooldownMax = 3; // 例: 3ターン待ち
+    private string lastAction;              // 直前の行動を記録
+
 
     public GameObject AttackButton;         //各コマンドボタン
     public GameObject SPAttackButton;
@@ -615,6 +626,20 @@ public class ButtleSystem : MonoBehaviour
 
                 //パワーの分だけ減らす
                 AIST.hp -= Attackpower;
+
+                //行動候補の算出
+                List<string> actions = GetAllyActions();
+
+                //状況の再分析
+                BattleContext ctx = new BattleContext(
+                (float)AIST.hp / AIST.maxHP,
+                    (float)monsterST.monster_hp / monsterST.monster_maxHp,
+                    actions
+                );
+
+                //AIの再学習
+                allyAI.Learn(ctx, lastAction, -5f);
+
                 //表記上のHP反映
                 AIST_TX.changeHP(AIST.hp);
 
@@ -654,6 +679,19 @@ public class ButtleSystem : MonoBehaviour
 
                 AddBattleLog("Friend Damaged" + monsterST.monster_power + "Point!");
 
+                //行動候補の算出
+                List<string> actions = GetAllyActions();
+
+                //状況の再分析
+                BattleContext ctx = new BattleContext(
+                (float)AIST.hp / AIST.maxHP,
+                    (float)monsterST.monster_hp / monsterST.monster_maxHp,
+                    actions
+                );
+
+                //AIの再学習
+                allyAI.Learn(ctx, lastAction, -5f);
+
                 //表記上のHPの反映
                 AIST_TX.changeHP(AIST.hp);
 
@@ -672,9 +710,22 @@ public class ButtleSystem : MonoBehaviour
 
             AddBattleLog("Monster Gurded!");
         }
-        else 
+        else
         {
             AddBattleLog("Monster RunAway!");
+
+            //行動候補の算出
+            List<string> actions = GetAllyActions();
+
+            //状況の再分析
+            BattleContext ctx = new BattleContext(
+            (float)AIST.hp / AIST.maxHP,
+                (float)monsterST.monster_hp / monsterST.monster_maxHp,
+                actions
+            );
+
+            //AIの再学習
+            allyAI.Learn(ctx, lastAction, -10f);
 
             ButtleEnd();
         }
@@ -694,6 +745,12 @@ public class ButtleSystem : MonoBehaviour
             ai_gurd = false;
         }
 
+        //クールターンの減少
+        if(AIguardBreakCooldown > 0)
+        {
+            AIguardBreakCooldown -= 1;
+        }
+
         //コマンドボタンの表示
         AttackButton.gameObject.SetActive(true);
         SPAttackButton.gameObject.SetActive(true);
@@ -702,39 +759,42 @@ public class ButtleSystem : MonoBehaviour
 
     }
 
-    // ButtleSystem.cs の中
-    void AllyTurn()
+    IEnumerator AllyTurn()
     {
-        System.Random random = new System.Random();
-        int value = random.Next(0, 100);
+        List<string> actions = GetAllyActions();
 
-        // 状況に応じて行動を決定
-        // 1. HPが30%以下なら回復優先（70%の確率で回復）
-        if (AIST.hp < AIST.maxHP * 0.3f)
+        //現在のステータスの状況をぶんせきする
+        BattleContext ctx = new BattleContext(
+        (float)AIST.hp / AIST.maxHP,
+            (float)monsterST.monster_hp / monsterST.monster_maxHp,
+            actions
+        );
+
+        int index = allyAI.ChooseAction(ctx);
+        string action = actions[index];
+        lastAction = action;
+
+        Debug.Log($"味方の行動: {action}");
+
+        switch (action)
         {
-            StartCoroutine(Heal());
-        }
-        // 2. 敵がガード中ならガード貫通攻撃優先
-        else if (monster_gurd)
-        {
-            if (value < 0.6f) // 60%でガード貫通
-                StartCoroutine(GuardBreakAttack());
-            else
-                StartCoroutine(NormalAttack());
-        }
-        // 3. 敵が強攻撃準備中ならガード
-        else
-        {
-            float rand = value;
-            //60%で通常攻撃
-            if (rand < 0.6f)
-                StartCoroutine(NormalAttack());
-            //20%でガード
-            else if (rand < 0.8f)
-                StartCoroutine(Guard());
-            //20%で特殊攻撃
-            else
-                StartCoroutine(GuardBreakAttack());
+            case "NormalAttack":
+                yield return StartCoroutine(NormalAttack());
+                allyAI.Learn(ctx, action, 10f);
+                break;
+            case "Guard":
+                yield return StartCoroutine(Guard());
+                allyAI.Learn(ctx, action, 5f);
+                break;
+            case "Heal":
+                yield return StartCoroutine(Heal());
+                allyAI.Learn(ctx, action, (AIST.hp < AIST.maxHP / 2) ? 12f : -5f);
+                break;
+            case "GuardBreak":
+                yield return StartCoroutine(GuardBreakAttack());
+                allyAI.Learn(ctx, action, 15f);
+                AIguardBreakCooldown = AIguardBreakCooldownMax;
+                break;
         }
     }
 
@@ -908,6 +968,22 @@ public class ButtleSystem : MonoBehaviour
         //モンスターのターン
         monsterTurn(save_monster);
     }
+
+    //ターン中に行動できるリストの算出
+    public List<string> GetAllyActions()
+    {
+        // 基本行動
+        List<string> actions = new List<string> { "NormalAttack", "Guard", "Heal" };
+
+        // ガード貫通がクールタイム中でなければ追加
+        if (AIguardBreakCooldown == 0)
+        {
+            actions.Add("GuardBreak");
+        }
+
+        return actions;
+    }
+
 
     //バトルログテキストの追加
     private void AddBattleLog(string message)
