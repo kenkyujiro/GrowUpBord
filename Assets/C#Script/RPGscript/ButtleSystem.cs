@@ -46,6 +46,7 @@ public class ButtleSystem : MonoBehaviour
     bool player_gurd = false;
     bool ai_gurd = false;
     bool monster_gurd = false;
+    bool monster_charge = false;
 
     //AIの特殊攻撃のクールタイム
     private int AIguardBreakCooldown = 0;   // 0 の時は使用可能
@@ -61,7 +62,7 @@ public class ButtleSystem : MonoBehaviour
     public GameObject battleLogTextPrefab;  // 行動表示テキストのプレハブ
     public Transform battleLogContainer;    // テキスト表示先の親
 
-    public GameObject GameManager;     //ゲームクリアscriptへ参照用
+    public GameObject GameManager;          //ゲームクリアscriptへ参照用
     private GameClearManager clear;
 
     private int maxLogCount = 30;
@@ -89,7 +90,8 @@ public class ButtleSystem : MonoBehaviour
         //オブジェクトの取得
         playerStatus = GameObject.Find("PlayerStatus");
         aiStatus = GameObject.Find("AIStatus");
-        GameManager = GameObject.Find("Gamemanager");
+        monsterStatus = GameObject.Find("MonsterStatus");
+        GameManager = GameObject.Find("GameClearManager");
 
         //プレイヤーステータス(hp,powerなど)の取得
         playerST = playerStatus.GetComponent<PlayerStatus>();
@@ -123,6 +125,9 @@ public class ButtleSystem : MonoBehaviour
         gameObject.SetActive(true);
 
         save_monster = monster;
+
+        //即チャージして攻撃してこないようにする
+        monster_charge = false;
 
         // プレハブを生成（MyScript付き）
         //モンスター名によって生成するモンスターを変える
@@ -581,7 +586,63 @@ public class ButtleSystem : MonoBehaviour
         //1=攻撃、2=特殊攻撃、3=ガード、4=逃げる
         yield return new WaitForSeconds(commandDelay);
 
-        if (actionCommand == "Attack")
+        if(monster_charge == true)
+        {
+            int Attackpower;
+
+            if (value == 0)
+            {
+                Attackpower = monsterST.monster_power*3 - playerST.defence;
+                playerST.hp -= Attackpower;
+
+                AddBattleLog("Player Damaged" + Attackpower + "Point!");
+
+                //表記上のHPの反映
+                playerST_TX.changeHP(playerST.hp);
+
+                if (playerST.hp <= 0)
+                {
+                    AddBattleLog("You Losed...");
+
+                    yield return new WaitForSeconds(commandDelay);
+
+                    //ゲームオーバー画面に遷移する
+                    SceneManager.LoadScene("GameOverScene");
+                }
+            }
+            else
+            {
+                Attackpower = monsterST.monster_power * 3 - AIST.defence;
+                AIST.hp -= Attackpower;
+
+                AddBattleLog("Friend Damaged" + Attackpower + "Point!");
+
+                //行動候補の算出
+                List<string> actions = GetAllyActions();
+
+                //状況の再分析
+                BattleContext ctx = new BattleContext(
+                (float)AIST.hp / AIST.maxHP,
+                    (float)monsterST.monster_hp / monsterST.monster_maxHp,
+                    actions
+                );
+
+                //AIの再学習
+                allyAI.Learn(ctx, lastAction, -5f);
+                AddBattleLog("Fri:I was Reinforced!");
+
+                //表記上のHPの反映
+                AIST_TX.changeHP(AIST.hp);
+
+                if (AIST.hp <= 0)
+                {
+                    AddBattleLog("Friend Losed...");
+
+                    yield return new WaitForSeconds(commandDelay);
+                }
+            }
+        }
+        else if (actionCommand == "Attack")
         {
             int Attackpower;
 
@@ -639,6 +700,7 @@ public class ButtleSystem : MonoBehaviour
 
                 //AIの再学習
                 allyAI.Learn(ctx, lastAction, -5f);
+                AddBattleLog("Fri:I was Reinforced!");
 
                 //表記上のHP反映
                 AIST_TX.changeHP(AIST.hp);
@@ -654,54 +716,9 @@ public class ButtleSystem : MonoBehaviour
         }
         else if (actionCommand == "Special")
         {
-            if (value == 0)
-            {
-                playerST.hp -= monsterST.monster_power;
-
-                AddBattleLog("Player Damaged" + monsterST.monster_power + "Point!");
-
-                //表記上のHPの反映
-                playerST_TX.changeHP(playerST.hp);
-
-                if (playerST.hp <= 0)
-                {
-                    AddBattleLog("You Losed...");
-
-                    yield return new WaitForSeconds(commandDelay);
-
-                    //ゲームオーバー画面に遷移する
-                    SceneManager.LoadScene("GameOverScene");
-                }
-            }
-            else 
-            {
-                AIST.hp -= monsterST.monster_power;
-
-                AddBattleLog("Friend Damaged" + monsterST.monster_power + "Point!");
-
-                //行動候補の算出
-                List<string> actions = GetAllyActions();
-
-                //状況の再分析
-                BattleContext ctx = new BattleContext(
-                (float)AIST.hp / AIST.maxHP,
-                    (float)monsterST.monster_hp / monsterST.monster_maxHp,
-                    actions
-                );
-
-                //AIの再学習
-                allyAI.Learn(ctx, lastAction, -5f);
-
-                //表記上のHPの反映
-                AIST_TX.changeHP(AIST.hp);
-
-                if (AIST.hp <= 0)
-                {
-                    AddBattleLog("Friend Losed...");
-
-                    yield return new WaitForSeconds(commandDelay);
-                }
-            }
+            //特殊攻撃のチャージ
+            monster_charge = true;
+            AddBattleLog("Monster Power Charge!");
         }
         else if (actionCommand == "Gurd") 
         {
@@ -781,18 +798,22 @@ public class ButtleSystem : MonoBehaviour
             case "NormalAttack":
                 yield return StartCoroutine(NormalAttack());
                 allyAI.Learn(ctx, action, 10f);
+                AddBattleLog("Fri:I was Reinforced!");
                 break;
             case "Guard":
                 yield return StartCoroutine(Guard());
                 allyAI.Learn(ctx, action, 5f);
+                AddBattleLog("Fri:I was Reinforced!");
                 break;
             case "Heal":
                 yield return StartCoroutine(Heal());
                 allyAI.Learn(ctx, action, (AIST.hp < AIST.maxHP / 2) ? 12f : -5f);
+                AddBattleLog("Fri:I was Reinforced!");
                 break;
             case "GuardBreak":
                 yield return StartCoroutine(GuardBreakAttack());
                 allyAI.Learn(ctx, action, 15f);
+                AddBattleLog("Fri:I was Reinforced!");
                 AIguardBreakCooldown = AIguardBreakCooldownMax;
                 break;
         }

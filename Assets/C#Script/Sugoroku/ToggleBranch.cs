@@ -18,17 +18,31 @@ public class ToggleBranch : MonoBehaviour
     }
     private void OnMouseDown()
     {
-        if(gameObject.CompareTag("Branch"))
+        //ˆê‚Â–Ú‚Ì•ªŠò‚Å‰º‚Éi‚Ş
+        if(gameObject.CompareTag("Branch1_1"))
         {
-            movePiece.How_Branch = true;
+            movePiece.How_Branch1 = true;
             movePiece.canClick = true;
-            uiManage.ManageBrunchArrow(false);
+            uiManage.ManageBrunchArrow(false, 1);
         }
-        else
+        //ˆê‚Â–Ú‚Ì•ªŠò‚Å^‚Á‚·‚®i‚Ş
+        else if (gameObject.CompareTag("Branch1_2"))
         {
-            movePiece.How_Branch = false;
+            movePiece.How_Branch1 = false;
             movePiece.canClick = true;
-            uiManage.ManageBrunchArrow(false);
+            uiManage.ManageBrunchArrow(false, 1);
+        }
+        else if(gameObject.CompareTag("Branch2_1"))
+        {
+            movePiece.How_Branch2 = true;
+            movePiece.canClick = true;
+            uiManage.ManageBrunchArrow(false, 2);
+        }
+        else if (gameObject.CompareTag("Branch2_2"))
+        {
+            movePiece.How_Branch2 = false;
+            movePiece.canClick = true;
+            uiManage.ManageBrunchArrow(false, 2);
         }
     }
 }

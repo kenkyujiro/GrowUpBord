@@ -65,6 +65,7 @@ public class PlayerStatus : MonoBehaviour
         else if (element1 == "hp")
         {
             Max_hp += element1_number;
+            hp += element1_number;
         }
         else if (element1 == "defence")
         {
@@ -83,6 +84,7 @@ public class PlayerStatus : MonoBehaviour
         else if (element2 == "hp")
         {
             Max_hp += element2_number;
+            hp += element2_number;
         }
         else if (element2 == "defence")
         {

@@ -11,7 +11,8 @@ public class UIManager : MonoBehaviour
 
     public TextMeshProUGUI ClickText;   //Click!!テキスト
 
-    public GameObject BranchArrow;      //分岐の矢印
+    public GameObject BranchArrow1;     //一つ目の分岐の矢印
+    public GameObject BranchArrow2;     //二つ目の分岐の矢印
 
     void Start()
     {
@@ -19,7 +20,8 @@ public class UIManager : MonoBehaviour
         DiceTextObj.gameObject.SetActive(false);
         DiceButtonObj.gameObject.SetActive(true);
         ClickText.gameObject.SetActive(false);
-        BranchArrow.gameObject.SetActive(false);
+        BranchArrow1.gameObject.SetActive(false);
+        BranchArrow2.gameObject.SetActive(false);
     }
 
     public void ManageDiceUI(bool DicePanel, bool DiceButton)
@@ -33,8 +35,16 @@ public class UIManager : MonoBehaviour
         ClickText.gameObject.SetActive(How_first);
     }
 
-    public void ManageBrunchArrow(bool BrunchArrow)
+    public void ManageBrunchArrow(bool BrunchArrow, int number)
     {
-        BranchArrow.gameObject.SetActive(BrunchArrow);
+        //分岐ごとに表示する矢印を切り替える
+        if(number == 1)
+        {
+            BranchArrow1.gameObject.SetActive(BrunchArrow);
+        }
+        else
+        {
+            BranchArrow2.gameObject.SetActive(BrunchArrow);
+        }
     }
 }

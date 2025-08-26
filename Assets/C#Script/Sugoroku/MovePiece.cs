@@ -22,14 +22,14 @@ public class MovePiece : MonoBehaviour
     public GameObject EventManager;    //イベント管理用
     private EventManager eventManager;
 
-    public GameObject playerStatus;         //プレイヤーステータスの参照(ゲームクリア確認用)
+    public GameObject playerStatus;    //プレイヤーステータスの参照(ゲームクリア確認用)
     private PlayerStatus playerST;
 
     public int GoPiece;                //進める出目の数
     private bool How_First;            //始めてのダイスロールかどうか
-    public bool How_Branch;            //分岐に進んだかどうか
+    public bool How_Branch1 = false;   //一つ目の分岐に進んだかどうか
+    public bool How_Branch2 = false;   //二つ目の分岐に進んだかどうか
     public bool canClick;              //クリックできるかどうか
-    private bool howClear;             //ゴールに付いたかどうか
 
     private void Awake()
     {
@@ -45,8 +45,6 @@ public class MovePiece : MonoBehaviour
 
         How_First = true;
         canClick = true;
-        How_Branch = false;
-        howClear = false;
     }
 
     private void OnEnable()
@@ -118,7 +116,7 @@ public class MovePiece : MonoBehaviour
                 GoPiece = 0;
                 Debug.Log("ラストバトルだ！");
             }
-            if(GoPiece == 0 && howClear != true)//出目分すすみおわったら表示する
+            if(GoPiece == 0)//出目分すすみおわったら表示する
             {
                 //ManageDiceUI(bool DicePanel, bool DiceButton)
                 uiManage.ManageDiceUI(false, true);
@@ -139,13 +137,38 @@ public class MovePiece : MonoBehaviour
     {
 
         //分岐に進むと決めたとき
-        if (How_Branch == true)
+        if (How_Branch1 == true)
+        {
+            transform.position += new Vector3(0, -1, 0);
+            //今後、分岐に分岐を重ねる予定であるため、ここでfalseにしておく
+            How_Branch1 = false;
+        }
+        else if(How_Branch2 == true) 
         {
             transform.position += new Vector3(0, 1, 0);
             //今後、分岐に分岐を重ねる予定であるため、ここでfalseにしておく
-            How_Branch = false;
+            How_Branch2 = false;
         }
-        //分岐を進んでいるとき
+        //一つ目の分岐を進んでいるとき
+        else if (transform.position.y <= -2)
+        {
+            //分岐の角の1個目についていないとき
+            if (transform.position.y > -5 && transform.position.x < 6)
+            {
+                transform.position += new Vector3(0, -1, 0);
+            }
+            //分岐の角の2個目についていないとき
+            else if (transform.position.x < 6)
+            {
+                transform.position += new Vector3(1, 0, 0);
+            }
+            //分岐の角の2個目についたとき
+            else
+            {
+                transform.position += new Vector3(0, 1, 0);
+            }
+        }
+        //二つ目の分岐を進んでいるとき
         else if (transform.position.y >= 0)
         {
             //分岐の角の1個目についていないとき
@@ -169,11 +192,17 @@ public class MovePiece : MonoBehaviour
         {
             //-1ずつずらす
             transform.position += new Vector3(-1, 0, 0);
-            //分岐点に着いたとき
-            if(transform.position.x == -2) 
+            //一つ目の分岐に着いたとき
+            if (transform.position.x == 1)
             {
                 canClick = false;
-                howGO_Branch();
+                howGO_Branch(1);
+            }
+            //二つ目の分岐点に着いたとき
+            if (transform.position.x == -2) 
+            {
+                canClick = false;
+                howGO_Branch(2);
             }
         }
         
@@ -181,10 +210,10 @@ public class MovePiece : MonoBehaviour
     }
 
     //分岐の選択処理関数
-    private void howGO_Branch()
+    private void howGO_Branch(int number)
     {
         //分岐の矢印の表示※矢印はOnMouseDownが付いている
-        uiManage.ManageBrunchArrow(true);
+        uiManage.ManageBrunchArrow(true, number);
     }
 
     
