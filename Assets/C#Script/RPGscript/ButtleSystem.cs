@@ -7,7 +7,9 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+#if UNITY_EDITOR
 using static UnityEditor.Progress;
+#endif
 using static UnityEngine.EventSystems.EventTrigger;
 
 //やらなければいけないこと
@@ -93,7 +95,7 @@ public class ButtleSystem : MonoBehaviour
         monsterStatus = GameObject.Find("MonsterStatus");
         GameManager = GameObject.Find("GameClearManager");
 
-        //プレイヤーステータス(hp,powerなど)の取得
+        //プレイヤーステータス(hp,powerなど)の取得7766
         playerST = playerStatus.GetComponent<PlayerStatus>();
         playerST_TX = playerStatus.GetComponent<PlayerStatusManager>();
         monsterST = monsterStatus.GetComponent<MonsterStatus>();
@@ -271,11 +273,13 @@ public class ButtleSystem : MonoBehaviour
         {
             if(AIST.hp >= 0)
             {
-                //AIのターン
-                AllyTurn();
+                Debug.Log("ターンが回る！");//ここまで動く
+                                     //AIのターン
+                StartCoroutine(AllyTurn());
             }
             else
             {
+                Debug.Log("おれの番だ！");
                 //モンスターのターン
                 monsterTurn(save_monster);
             }
@@ -365,7 +369,7 @@ public class ButtleSystem : MonoBehaviour
             if (AIST.hp >= 0)
             {
                 //AIのターン
-                AllyTurn();
+                StartCoroutine(AllyTurn());
             }
             else
             {
@@ -401,7 +405,7 @@ public class ButtleSystem : MonoBehaviour
         if (AIST.hp >= 0)
         {
             //AIのターン
-            AllyTurn();
+            StartCoroutine(AllyTurn());
         }
         else
         {
@@ -585,6 +589,8 @@ public class ButtleSystem : MonoBehaviour
 
         //1=攻撃、2=特殊攻撃、3=ガード、4=逃げる
         yield return new WaitForSeconds(commandDelay);
+
+        Debug.Log("おれの攻撃だ！");
 
         if(monster_charge == true)
         {
@@ -778,6 +784,8 @@ public class ButtleSystem : MonoBehaviour
 
     IEnumerator AllyTurn()
     {
+        Debug.Log("分析開始！");
+
         List<string> actions = GetAllyActions();
 
         //現在のステータスの状況をぶんせきする

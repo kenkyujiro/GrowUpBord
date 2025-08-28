@@ -4748,7 +4748,7 @@ MonoBehaviour:
   DiceSystem: {fileID: 1559518579}
   uiManager: {fileID: 1175397556}
   EventManager: {fileID: 1454332070}
-  playerStatus: {fileID: 0}
+  playerStatus: {fileID: 49231225}
   GoPiece: 0
   How_Branch1: 0
   How_Branch2: 0
@@ -7824,7 +7824,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Player: {fileID: 952548638}
-  playerStatus: {fileID: 0}
+  playerStatus: {fileID: 49231225}
 --- !u!1 &1504566094
 GameObject:
   m_ObjectHideFlags: 0

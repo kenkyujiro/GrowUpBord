@@ -59,6 +59,9 @@ public class MovePiece : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        //ƒRƒ}‚ð•\Ž¦‚É‚·‚é
+        this.gameObject.SetActive(true);
+
         DiceSystem = GameObject.Find("DiceSystem");
         uiManager = GameObject.Find("UIManager");
         EventManager = GameObject.Find("EventManager");

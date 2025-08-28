@@ -70,6 +70,8 @@ public class EventManager : MonoBehaviour
                     //値を保存する
                     savePos();
                     PlayerPrefs.SetString("monsterName", "Bison");
+                    //コマを一時的に非表示にする
+                    Player.gameObject.SetActive(false);
                     //RPGシーンに遷移する
                     SceneManager.LoadScene("RPGScene");
                 }
@@ -78,6 +80,8 @@ public class EventManager : MonoBehaviour
                     //値を保存する
                     savePos();
                     PlayerPrefs.SetString("monsterName", "Run");
+                    //コマを一時的に非表示にする
+                    Player.gameObject.SetActive(false);
                     //RPGシーンに遷移する
                     SceneManager.LoadScene("RPGScene");
                 }
@@ -86,6 +90,8 @@ public class EventManager : MonoBehaviour
                     //値を保存する
                     savePos();
                     PlayerPrefs.SetString("monsterName", "Zako2");
+                    //コマを一時的に非表示にする
+                    Player.gameObject.SetActive(false);
                     //RPGシーンに遷移する
                     SceneManager.LoadScene("RPGScene");
                 }
@@ -137,6 +143,8 @@ public class EventManager : MonoBehaviour
                     //値を保存する
                     savePos();
                     PlayerPrefs.SetString("monsterName", "Rare");
+                    //コマを一時的に非表示にする
+                    Player.gameObject.SetActive(false);
                     //RPGシーンに遷移する
                     SceneManager.LoadScene("RPGScene");
                 }
@@ -145,6 +153,8 @@ public class EventManager : MonoBehaviour
                     //値を保存する
                     savePos();
                     PlayerPrefs.SetString("monsterName", "Zako2");
+                    //コマを一時的に非表示にする
+                    Player.gameObject.SetActive(false);
                     //RPGシーンに遷移する
                     SceneManager.LoadScene("RPGScene");
                 }
@@ -153,6 +163,8 @@ public class EventManager : MonoBehaviour
                     //値を保存する
                     savePos();
                     PlayerPrefs.SetString("monsterName", "Zako1");
+                    //コマを一時的に非表示にする
+                    Player.gameObject.SetActive(false);
                     //RPGシーンに遷移する
                     SceneManager.LoadScene("RPGScene");
                 }
@@ -164,6 +176,8 @@ public class EventManager : MonoBehaviour
             //値を保存する
             savePos();
             PlayerPrefs.SetString("monsterName", "Boss");
+            //コマを一時的に非表示にする
+            Player.gameObject.SetActive(false);
             //RPGシーンに遷移する
             SceneManager.LoadScene("RPGScene");
         }
@@ -187,6 +201,8 @@ public class EventManager : MonoBehaviour
         //値を保存する
         savePos();
         PlayerPrefs.SetString("monsterName", "Zako1");
+        //コマを一時的に非表示にする
+        Player.gameObject.SetActive(false);
         //RPGシーンに遷移する
         SceneManager.LoadScene("RPGScene");
     }

@@ -9,6 +9,10 @@ TagManager:
   - LevelText
   - HPText
   - EXPText
+  - Branch1_1
+  - Branch1_2
+  - Branch2_1
+  - Branch2_2
   layers:
   - Default
   - TransparentFX
